@@ -1,6 +1,7 @@
 import random
 from logger_config import logger  # Importando o logger configurado
-from generate_profiles_json import generate_profiles_json
+from src.config import config  # Importa as configurações
+from src.core.generate_profiles_json import generate_profiles_json
 
 def connect_to_profiles(browser, number_profiles, log_window=None):
     """Conecta aos perfis do LinkedIn conforme o número especificado e exibe os logs."""
@@ -17,7 +18,8 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
         page.wait_for_timeout(timeout=3000)
         logger.info("Página inicial do LinkedIn carregada.")
         
-        page.goto('https://www.linkedin.com/search/results/people/?keywords=desenvolvedor%20rpa&network=%5B%22S%22%5D&origin=FACETED_SEARCH&sid=g-V')
+        connect_url = config['search_links']['connect']
+        page.goto(connect_url)
         logger.info("Acessando a página de busca de pessoas no LinkedIn.")
         
         raw_profiles = []
@@ -38,13 +40,13 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
                     raw_profiles.append(profile_text)
                     name = profile_text.split('\n')[0]
 
-                    # waiting_time += 500
-                    waiting_time += random.randint(500, 1500)
-                    page.wait_for_timeout(timeout=waiting_time)
+                    # # waiting_time += 500
+                    # waiting_time += random.randint(500, 1500)
+                    # page.wait_for_timeout(timeout=waiting_time)
 
-                    connect_button.click()
-                    page.wait_for_timeout(timeout=2000)
-                    page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
+                    # connect_button.click()
+                    # page.wait_for_timeout(timeout=2000)
+                    # page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
 
                     # Incrementa o contador
                     counter += 1

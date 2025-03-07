@@ -2,6 +2,7 @@ import os
 import json
 from datetime import datetime
 import google.generativeai as genai
+from src.config import config  # Importa as configurações
 
 def generate_profiles_json(data):
 
@@ -63,7 +64,7 @@ def generate_profiles_json(data):
     formatted_date = current_date.strftime("%d%m%Y")
 
     # Salvando novamente o JSON no arquivo
-    with open(f'profile_json_{formatted_date}.json', 'w') as file:
+    with open(f'{config['data']['dir']}profile_json_{formatted_date}.json', 'w') as file:
         json.dump(profile_json, file, indent=4)  # Usando indent para uma formatação legível
 
     # Agora, resposta_json contém a lista de objetos JSON

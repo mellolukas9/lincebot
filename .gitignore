@@ -4,3 +4,4 @@ __pycache__/
 *.json
 *.log
 test.py
+src/config.yaml

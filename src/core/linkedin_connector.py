@@ -40,13 +40,13 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
                     raw_profiles.append(profile_text)
                     name = profile_text.split('\n')[0]
 
-                    # # waiting_time += 500
-                    # waiting_time += random.randint(500, 1500)
-                    # page.wait_for_timeout(timeout=waiting_time)
+                    # waiting_time += 500
+                    waiting_time += random.randint(500, 1500)
+                    page.wait_for_timeout(timeout=waiting_time)
 
-                    # connect_button.click()
-                    # page.wait_for_timeout(timeout=2000)
-                    # page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
+                    connect_button.click()
+                    page.wait_for_timeout(timeout=2000)
+                    page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
 
                     # Incrementa o contador
                     counter += 1

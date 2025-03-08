@@ -1,53 +1,67 @@
 import tkinter as tk
-from tkinter import messagebox
 import logging
-import sys
-import os
-
-# Adiciona a pasta 'src' ao path do Python
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
-from src.main import start_visit  # Agora deve funcionar
+from .dashboard import show_dashboard
+from .connect import show_connect      # Importa a função do Connect
+# from message import show_message      # Importa a função do Message
 
 # Configuração da janela principal
 window = tk.Tk()
-window.title("LinkedIn Automation")
-window.geometry("500x400")
-window.config(bg="#f2f2f2")
+window.title("LinceBot Automation")
+window.geometry("800x600")
+window.config(bg="#f0f0f0")
 
-# Título
-title = tk.Label(window, text="LinkedIn Automation", font=("Arial", 18, "bold"), fg="#0e76a8", bg="#f2f2f2")
-title.pack(pady=20)
+# Coluna da esquerda (menu)
+left_frame = tk.Frame(window, bg="#2c3e50", width=200)
+left_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-# Campo de entrada para número de perfis
-label_profiles = tk.Label(window, text="Number of Profiles:", font=("Arial", 12), bg="#f2f2f2")
-label_profiles.pack(pady=5)
+# Nome do usuário
+user_label = tk.Label(left_frame, text="Lucas Almeida", font=("Arial", 14), bg="#2c3e50", fg="white")
+user_label.pack(pady=20)
 
-entry_profiles = tk.Entry(window, font=("Arial", 12), validate="key", bd=2, relief="groove")
-entry_profiles.pack(pady=5)
+# Coluna da direita (conteúdo)
+right_frame = tk.Frame(window, bg="#ffffff")
+right_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-# Função do botão Connect
-def on_connect():
-    num_profiles = entry_profiles.get()
-    if not num_profiles.isdigit():
-        messagebox.showerror("Erro", "Por favor, insira um número válido.")
-        return
-    logger.info(f"Iniciando visita para {num_profiles} perfis.")
-    start_visit(int(num_profiles), logger)
+# Título do conteúdo
+content_title = tk.Label(right_frame, text="Dashboard", font=("Arial", 18), bg="#ffffff", fg="#2c3e50")
+content_title.pack(pady=20)
 
-# Botão Connect
-button_connect = tk.Button(window, text="Connect", font=("Arial", 12), bg="#0e76a8", fg="white",
-                           command=on_connect, relief="raised", width=20)
-button_connect.pack(pady=10)
+# Conteúdo dinâmico
+content_label = tk.Label(right_frame, text="Dashboard Content", font=("Arial", 14), bg="#ffffff", fg="#34495e")
+content_label.pack(pady=20)
 
-# Área de log com scrollbar
-frame_log = tk.Frame(window)
-frame_log.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
+# Função para limpar o conteúdo da coluna da direita
+def clear_content():
+    for widget in right_frame.winfo_children():
+        if widget not in (content_title, content_label):
+        # if widget not in (content_title):
+            widget.destroy()
 
-log_text = tk.Text(frame_log, height=10, wrap=tk.WORD, font=("Arial", 10), bg="#f7f7f7", state=tk.DISABLED)
+# Função para carregar o Dashboard inicialmente
+def load_dashboard():
+    clear_content()
+    show_dashboard(right_frame, content_title, content_label)
+
+# Menu de navegação
+menu_items = [
+    ("Dashboard", lambda: load_dashboard()),
+    ("Connect", lambda: [clear_content(), show_connect(right_frame, content_title, content_label)]),
+    # ("Message", lambda: [clear_content(), show_message(right_frame, content_title, content_label)]),
+]
+
+for item, command in menu_items:
+    button = tk.Button(left_frame, text=item, font=("Arial", 12), bg="#34495e", fg="white", bd=0,
+                       command=command, width=20, anchor="w")
+    button.pack(pady=5, padx=10)
+
+# Área de log com scrollbar (renderizada por último)
+log_frame = tk.Frame(window, bg="#ffffff")
+log_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False, pady=10, padx=10)
+
+log_text = tk.Text(log_frame, height=15, wrap=tk.WORD, font=("Arial", 10), bg="#f7f7f7", state=tk.DISABLED)
 log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-log_scrollbar = tk.Scrollbar(frame_log, command=log_text.yview)
+log_scrollbar = tk.Scrollbar(log_frame, command=log_text.yview)
 log_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 log_text.config(yscrollcommand=log_scrollbar.set)
 
@@ -82,19 +96,8 @@ file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-# # Função do botão Connect
-# def on_connect():
-#     num_profiles = entry_profiles.get()
-#     if not num_profiles.isdigit():
-#         messagebox.showerror("Erro", "Por favor, insira um número válido.")
-#         return
-#     logger.info(f"Iniciando visita para {num_profiles} perfis.")
-#     start_visit(int(num_profiles), logger)
-
-# # Botão Connect
-# button_connect = tk.Button(window, text="Connect", font=("Arial", 12), bg="#0e76a8", fg="white",
-#                            command=on_connect, relief="raised", width=20)
-# button_connect.pack(pady=10)
+# Carregar o Dashboard inicialmente
+load_dashboard()
 
 # Iniciar interface gráfica
 window.mainloop()

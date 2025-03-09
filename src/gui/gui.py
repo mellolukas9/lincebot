@@ -1,5 +1,6 @@
 import tkinter as tk
 import logging
+from .colors import BACKGROUND_COLOR_LIGHT, DARK_BLUE, WHITE, MEDIUM_BLUE, BACKGROUND_LOG
 from .dashboard import show_dashboard
 from .connect import show_connect      # Importa a função do Connect
 # from message import show_message      # Importa a função do Message
@@ -8,26 +9,26 @@ from .connect import show_connect      # Importa a função do Connect
 window = tk.Tk()
 window.title("LinceBot Automation")
 window.geometry("800x600")
-window.config(bg="#f0f0f0")
+window.config(bg=BACKGROUND_COLOR_LIGHT)
 
 # Coluna da esquerda (menu)
-left_frame = tk.Frame(window, bg="#2c3e50", width=200)
+left_frame = tk.Frame(window, bg=DARK_BLUE, width=200)
 left_frame.pack(side=tk.LEFT, fill=tk.Y)
 
 # Nome do usuário
-user_label = tk.Label(left_frame, text="Lucas Almeida", font=("Arial", 14), bg="#2c3e50", fg="white")
+user_label = tk.Label(left_frame, text="Lucas Almeida", font=("Arial", 14), bg=DARK_BLUE, fg="white")
 user_label.pack(pady=20)
 
 # Coluna da direita (conteúdo)
-right_frame = tk.Frame(window, bg="#ffffff")
+right_frame = tk.Frame(window, bg=WHITE)
 right_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 # Título do conteúdo
-content_title = tk.Label(right_frame, text="Dashboard", font=("Arial", 18), bg="#ffffff", fg="#2c3e50")
+content_title = tk.Label(right_frame, text="Dashboard", font=("Arial", 18), bg=WHITE, fg=DARK_BLUE)
 content_title.pack(pady=20)
 
 # Conteúdo dinâmico
-content_label = tk.Label(right_frame, text="Dashboard Content", font=("Arial", 14), bg="#ffffff", fg="#34495e")
+content_label = tk.Label(right_frame, text="Dashboard Content", font=("Arial", 14), bg=WHITE, fg=MEDIUM_BLUE)
 content_label.pack(pady=20)
 
 # Função para limpar o conteúdo da coluna da direita
@@ -50,15 +51,15 @@ menu_items = [
 ]
 
 for item, command in menu_items:
-    button = tk.Button(left_frame, text=item, font=("Arial", 12), bg="#34495e", fg="white", bd=0,
+    button = tk.Button(left_frame, text=item, font=("Arial", 12), bg=MEDIUM_BLUE, fg="white", bd=0,
                        command=command, width=20, anchor="w")
     button.pack(pady=5, padx=10)
 
 # Área de log com scrollbar (renderizada por último)
-log_frame = tk.Frame(window, bg="#ffffff")
+log_frame = tk.Frame(window, bg=WHITE)
 log_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False, pady=10, padx=10)
 
-log_text = tk.Text(log_frame, height=15, wrap=tk.WORD, font=("Arial", 10), bg="#f7f7f7", state=tk.DISABLED)
+log_text = tk.Text(log_frame, height=15, wrap=tk.WORD, font=("Arial", 10), bg=BACKGROUND_LOG, state=tk.DISABLED)
 log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
 log_scrollbar = tk.Scrollbar(log_frame, command=log_text.yview)

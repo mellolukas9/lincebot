@@ -11,7 +11,7 @@ import unittest
 class TestMain(unittest.TestCase):
     def test_main(self):
         """Testa a função main."""
-        test(number_profiles=1, process='connect')  # Chama a função test
+        test(number_profiles=1, process='visit')  # Chama a função test
 
 if __name__ == "__main__":
     unittest.main()

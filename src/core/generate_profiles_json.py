@@ -4,7 +4,7 @@ from datetime import datetime
 import google.generativeai as genai
 from src.config import config  # Importa as configurações
 
-def generate_profiles_json(data):
+def generate_profiles_json(data, action):
 
     prompt = """
     Por favor, analise a seguinte lista de dados de perfis e converta cada perfil em um objeto JSON no seguinte formato:
@@ -16,6 +16,7 @@ def generate_profiles_json(data):
     "skills": ["Habilidade 1", "Habilidade 2", ...],
     "current_role": "Função Atual (pode ser null)",
     "common_connections": ["Conexão 1", "Conexão 2", ...]
+    "profile_link": "https://www.linkedin.com/in/name123/"
     }
 
     Aqui está a lista de dados dos perfis:
@@ -64,7 +65,7 @@ def generate_profiles_json(data):
     formatted_date = current_date.strftime("%d%m%Y")
 
     # Salvando novamente o JSON no arquivo
-    with open(f'{config['data']['dir']}profile_json_{formatted_date}.json', 'w') as file:
+    with open(f'{config['data']['dir']}{action}_profiles_{formatted_date}.json', 'w') as file:
         json.dump(profile_json, file, indent=4)  # Usando indent para uma formatação legível
 
     # Agora, resposta_json contém a lista de objetos JSON

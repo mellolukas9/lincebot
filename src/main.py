@@ -108,11 +108,11 @@ def start_process(number_profiles, logger, process):
     return event
 
 # Função principal
-# def main():
-#     """Função principal que inicia o processo de conexão."""
-#     number_profiles = 5  # Número de perfis a serem conectados
-#     event = start_visit(number_profiles, logger)
-#     event.wait()  # Aguarda a execução da thread terminar
+def test(number_profiles, process):
+    """Função principal que inicia o processo de conexão."""
+    # number_profiles = 5  # Número de perfis a serem conectados
+    event = start_process(number_profiles, logger, process)
+    event.wait()  # Aguarda a execução da thread terminar
 
 # if __name__ == "__main__":
 #     main()

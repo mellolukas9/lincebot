@@ -36,17 +36,19 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
                 connect_button = profile.locator('button[class="artdeco-button artdeco-button--2 artdeco-button--secondary ember-view"]')
 
                 if connect_button.inner_text() == 'Conectar':  # Verifica o botão "Conectar"
-                    profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
-                    raw_profiles.append(profile_text)
-                    name = profile_text.split('\n')[0]
-
-                    # waiting_time += 500
                     waiting_time += random.randint(500, 1500)
                     page.wait_for_timeout(timeout=waiting_time)
 
                     connect_button.click()
                     page.wait_for_timeout(timeout=2000)
                     page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
+
+                    profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
+                    profile_url = profile.locator('a').first.get_attribute("href")
+                    profile_url = profile_url.split('?mini')[0]
+                    profile_text = profile_text + '\n' + profile_url
+                    raw_profiles.append(profile_text)
+                    name = profile_text.split('\n')[0]
 
                     # Incrementa o contador
                     counter += 1
@@ -71,7 +73,7 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
                     break  # Se o botão "Avançar" não for encontrado, encerre o loop.
 
         # Processa os perfis encontrados
-        profile_json = generate_profiles_json(data=raw_profiles)
+        profile_json = generate_profiles_json(data=raw_profiles, action="connected")
         logger.info(f"Processados {counter} perfis, gerando o JSON.")
 
         # Log de sucesso

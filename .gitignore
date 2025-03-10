@@ -5,3 +5,5 @@ __pycache__/
 *.log
 test.py
 src/config.yaml
+.pytest_cache/
+.vscode/

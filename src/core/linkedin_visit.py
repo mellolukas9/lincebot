@@ -18,8 +18,9 @@ def visit_to_profiles(browser, number_profiles):
         page.wait_for_timeout(timeout=3000)
         logger.info("Página inicial do LinkedIn carregada.")
         
-        connect_url = config['search_links']['visit']
-        page.goto(connect_url)
+        visit_url = config['search_links']['extract_profiles']['rpa_recruiters']
+        # connect_url = connect_url = config['search_links']['visit']
+        page.goto(visit_url)
         logger.info("Acessando a página de busca de pessoas no LinkedIn.")
         
         raw_profiles = []
@@ -27,30 +28,27 @@ def visit_to_profiles(browser, number_profiles):
         waiting_time = 0
 
         while counter < int(number_profiles):
-            logger.info(f"Buscando {number_profiles} perfis, {counter} já conectados.")
+            logger.info(f"Buscando {number_profiles} perfis, {counter} já visitados.")
             page.wait_for_timeout(timeout=3000)
             profiles = page.locator('div[data-view-name="search-entity-result-universal-template"]').all()
 
             for profile in profiles:
                 profile.scroll_into_view_if_needed()
-                send_message_button = profile.locator('button[class="artdeco-button artdeco-button--2 artdeco-button--secondary ember-view"]')
+                profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
+                profile.click()
+                
+                waiting_time = random.randint(3000, 5000)
+                page.wait_for_timeout(timeout=waiting_time)
 
-                if send_message_button.inner_text() == 'Enviar mensagem':  # Verifica o botão "Conectar"
-                    profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
-                    raw_profiles.append(profile_text)
-                    name = profile_text.split('\n')[0]
+                profile_text = profile_text + '\n' + page.url
+                raw_profiles.append(profile_text)
+                
+                counter += 1
+                page.go_back()
 
-                    # waiting_time += 500
-                    waiting_time += random.randint(500, 1500)
-                    page.wait_for_timeout(timeout=waiting_time)
-
-                    # Incrementa o contador
-                    counter += 1
-                    logger.info(f"Visitando o perfil {counter} | {name}.")
-
-                    if counter >= int(number_profiles):
-                        logger.info(f"{counter} perfis visitados, atingido o limite.")
-                        break
+                if counter >= int(number_profiles):
+                    logger.info(f"{counter} perfis visitados, atingido o limite.")
+                    break
 
             if counter < int(number_profiles):  # Caso o contador de perfis não tenha sido atingido
                 page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
@@ -67,13 +65,13 @@ def visit_to_profiles(browser, number_profiles):
                     break  # Se o botão "Avançar" não for encontrado, encerre o loop.
 
         # Processa os perfis encontrados
-        profile_json = generate_profiles_json(data=raw_profiles)
+        profile_json = generate_profiles_json(data=raw_profiles, action="visited")
         logger.info(f"Processados {counter} perfis, gerando o JSON.")
 
         # Log de sucesso
         logger.info(f"Visita bem-sucedida a {counter} perfis!")
 
-        # Retorna os perfis conectados
+        # Retorna os perfis
         return profile_json
 
     except Exception as e:

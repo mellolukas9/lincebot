@@ -3,6 +3,7 @@ import logging
 from .colors import BACKGROUND_COLOR_LIGHT, DARK_BLUE, WHITE, MEDIUM_BLUE, BACKGROUND_LOG
 from .dashboard import show_dashboard
 from .connect import show_connect      # Importa a função do Connect
+from .visit import show_visit
 # from message import show_message      # Importa a função do Message
 
 # Configuração da janela principal
@@ -47,6 +48,7 @@ def load_dashboard():
 menu_items = [
     ("Dashboard", lambda: load_dashboard()),
     ("Connect", lambda: [clear_content(), show_connect(right_frame, content_title, content_label)]),
+    ("Visit", lambda: [clear_content(), show_visit(right_frame, content_title, content_label)]),
     # ("Message", lambda: [clear_content(), show_message(right_frame, content_title, content_label)]),
 ]
 

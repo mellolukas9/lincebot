@@ -2,6 +2,7 @@ import logging
 import threading
 from src.core.playwright_manager import start_playwright, close_playwright
 from src.core.linkedin_connector import connect_to_profiles
+from src.core.linkedin_visit import visit_to_profiles
 
 # Configuração do logger
 logger = logging.getLogger("LinkedInAutomation")
@@ -18,7 +19,7 @@ def validate_number_input(value):
         return False
 
 # Função que será chamada ao clicar no botão
-def visit(number_profiles, logger, event):
+def connect(number_profiles, logger, event):
     try:
         logger.info("Starting visit function.")
         if not validate_number_input(number_profiles):
@@ -53,13 +54,52 @@ def visit(number_profiles, logger, event):
         logger.info("Visit function completed.")
         event.set()
 
+# Função que será chamada ao clicar no botão
+def visit(number_profiles, logger, event):
+    try:
+        logger.info("Starting visit function.")
+        if not validate_number_input(number_profiles):
+            raise ValueError("Please enter a valid positive number of profiles.")
+
+        # Log no console e na interface gráfica
+        logger.info("Starting the Playwright process...")
+
+        # Inicia o Playwright
+        browser, playwright = start_playwright()
+        if not browser:
+            raise RuntimeError("Failed to start Playwright.")
+
+        logger.info("Playwright started successfully.")
+
+        # Conecta aos perfis do LinkedIn
+        profile_json = visit_to_profiles(browser, number_profiles)
+
+        # Exibe o resultado
+        if profile_json:
+            logger.info(f"Successfully visit requests to {int(number_profiles)} profiles!")
+        else:
+            logger.error("An error occurred during the process.")
+
+    except Exception as e:
+        logger.error(f"Error during execution: {e}")
+        raise
+
+    finally:
+        # Fecha o navegador após terminar
+        close_playwright(browser, playwright)
+        logger.info("Visit function completed.")
+        event.set()
+
 # Função para executar a função visit em uma nova thread
-def start_visit(number_profiles, logger):
+def start_process(number_profiles, logger, process):
     # Cria o evento
     event = threading.Event()
     
     # Cria a thread para executar a função visit
-    thread = threading.Thread(target=visit, args=(number_profiles, logger, event), daemon=True)
+    if process == 'connect':
+        thread = threading.Thread(target=connect, args=(number_profiles, logger, event), daemon=True)
+    elif process == 'visit':
+        thread = threading.Thread(target=visit, args=(number_profiles, logger, event), daemon=True)
     
     # Inicia a thread
     thread.start()

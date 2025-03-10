@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import logging
 from .colors import DARK_BLUE, WHITE, BLUE
-from src.main import start_visit  # Importa a função start_visit
+from src.main import start_process  # Importa a função start_visit
 
 logger = logging.getLogger("LinkedInAutomation")
 
@@ -28,7 +28,7 @@ def show_connect(right_frame, content_title, content_label=None):
             messagebox.showerror("Erro", "Por favor, insira um número válido.")
             return
         logger.info(f"Iniciando conexão para {num_profiles} perfis.")
-        start_visit(int(num_profiles), logger)  # Chama a função start_visit
+        start_process(int(num_profiles), logger, process="connect")  # Chama a função start_visit
 
     connect_button = tk.Button(right_frame, text="Start Connect", font=("Arial", 12), bg=BLUE, fg="white",
                                command=start_connect, relief="raised", width=20)

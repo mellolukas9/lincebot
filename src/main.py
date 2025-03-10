@@ -51,7 +51,7 @@ def connect(number_profiles, logger, event):
     finally:
         # Fecha o navegador após terminar
         close_playwright(browser, playwright)
-        logger.info("Visit function completed.")
+        logger.info("Connect function completed.")
         event.set()
 
 # Função que será chamada ao clicar no botão

@@ -37,7 +37,7 @@ def visit_to_profiles(browser, number_profiles):
                 profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
                 profile.click()
                 
-                waiting_time = random.randint(3000, 5000)
+                waiting_time += random.randint(1000, 3000)
                 page.wait_for_timeout(timeout=waiting_time)
 
                 profile_text = profile_text + '\n' + page.url

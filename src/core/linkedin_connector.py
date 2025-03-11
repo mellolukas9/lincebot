@@ -22,7 +22,15 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
         page.goto(connect_url)
         logger.info("Acessando a página de busca de pessoas no LinkedIn.")
         
-        raw_profiles = []
+        temp = f'{config['data']['dir']}temp.txt'
+
+        try:
+            with open(temp, 'r') as file:
+                raw_profiles = eval(file.read())
+        except:
+            raw_profiles = []
+            
+        # raw_profiles = []
         counter = 0
         waiting_time = 0
 
@@ -36,7 +44,7 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
                 connect_button = profile.locator('button[class="artdeco-button artdeco-button--2 artdeco-button--secondary ember-view"]')
 
                 if connect_button.inner_text() == 'Conectar':  # Verifica o botão "Conectar"
-                    waiting_time += random.randint(500, 1500)
+                    waiting_time += random.randint(1000, 3000)
                     page.wait_for_timeout(timeout=waiting_time)
 
                     connect_button.click()
@@ -79,10 +87,18 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
         # Log de sucesso
         logger.info(f"Conexão bem-sucedida com {counter} perfis!")
 
+        # Criar ou sobrescrever o arquivo, deixando-o vazio
+        with open(temp, 'w') as file:
+            pass  # Não escreve nada, apenas mantém o arquivo vazio
+
         # Retorna os perfis conectados
         return profile_json
 
     except Exception as e:
         # Log de erro
         logger.error(f"Erro durante a execução do LinkedIn Connector: {e}")
+
+        with open(temp, 'w') as file:
+            file.write(str(raw_profiles))
+
         return None  # Retorna None em caso de erro

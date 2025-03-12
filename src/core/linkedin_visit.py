@@ -1,7 +1,11 @@
 import random
+import json
+import os
+from datetime import datetime
 from src.utils.logger_config import logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
-from src.core.generate_profiles_json import generate_profiles_json
+from src.core.extract_profiles import extract_profiles_to_visit
+from src.utils.library import get_current_time
 
 def visit_to_profiles(browser, number_profiles):
     """Visita os perfis do LinkedIn conforme o número especificado e exibe os logs."""
@@ -17,64 +21,57 @@ def visit_to_profiles(browser, number_profiles):
         page.goto('https://www.linkedin.com')
         page.wait_for_timeout(timeout=3000)
         logger.info("LinkedIn home page loaded.")
-        
-        logger.info("Accessing the profile search.")
-        visit_url = config['search_links']['extract_profiles']['rpa_recruiters']
-        # connect_url = connect_url = config['search_links']['visit']
-        page.goto(visit_url)
-        
-        raw_profiles = []
+
+        new_profiles = extract_profiles_to_visit(browser, number_profiles)
+        profiles = new_profiles
+
+        # processed_profiles = []
         counter = 0
         waiting_time = 0
-
-        while counter < int(number_profiles):
+        
+        for profile in profiles:
             logger.info(f"Searching {number_profiles} profiles, {counter} already connected.")
-            page.wait_for_timeout(timeout=3000)
-            profiles = page.locator('div[data-view-name="search-entity-result-universal-template"]').all()
 
-            for profile in profiles:
-                profile.scroll_into_view_if_needed()
-                profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
-                profile.click()
-                
-                waiting_time += random.randint(1000, 3000)
-                page.wait_for_timeout(timeout=waiting_time)
+            waiting_time += random.randint(1000, 3000)
+            page.wait_for_timeout(timeout=waiting_time)
+            
+            name = profile['name']
+            link = profile['profile_link']
+            page.goto(link)
+            profile['day_visited'] = get_current_time()
+       
+            # page.go_back()
+            logger.info(f"Profile {counter} visited | {name}.")
+            counter += 1
 
-                profile_text = profile_text + '\n' + page.url
-                name = profile_text.split('\n')[0]
-                raw_profiles.append(profile_text)
-                
-                counter += 1
-                page.go_back()
-                logger.info(f"Profile {counter} visited | {name}.")
+            if counter >= number_profiles:
+                break
 
-                if counter >= int(number_profiles):
-                    logger.info(f"{counter} profiles visited, limit reached.")
-                    break
+        # Caminho do diretório de dados (como string)
+        data_dir = config['data']['dir']
 
-            if counter < int(number_profiles):  # Caso o contador de perfis não tenha sido atingido
-                page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
-                logger.info("Scrolling the page to load more profiles.")
+        # Garante que o diretório existe
+        os.makedirs(data_dir, exist_ok=True)
 
-                # Espera o botão "Avançar" aparecer e clica nele
-                try:
-                    next_button = page.locator('button[aria-label="Avançar"]')  # Botão "Avançar"
-                    next_button.wait_for(state="visible", timeout=5000)
-                    next_button.click()
-                    logger.info("Clicking the 'Next' button.")
-                except:
-                    logger.error("Unable to click 'Next' button.")  # Log de erro
-                    break  # Se o botão "Avançar" não for encontrado, encerre o loop.
+        # Caminho para o arquivo JSON
+        file_path = os.path.join(data_dir, "visited.json")
 
-        # Processa os perfis encontrados
-        profile_json = generate_profiles_json(data=raw_profiles, action="visited")
-        logger.info(f"Processados {counter} perfis, gerando o JSON.")
+        # Carregar o conteúdo atual do arquivo, se ele existir
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                existing_profiles = json.load(f)
+        except FileNotFoundError:
+            # Se o arquivo não existir, iniciar uma lista vazia
+            existing_profiles = []
 
-        # Log de sucesso
-        logger.info(f"Visita bem-sucedida a {counter} perfis!")
+        # Adicionar os novos perfis à lista existente
+        existing_profiles.extend(profiles)
 
-        # Retorna os perfis
-        return profile_json
+        # Salvar a lista atualizada no arquivo
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(existing_profiles, f, ensure_ascii=False, indent=4)
+
+        return profiles
 
     except Exception as e:
         # Log de erro

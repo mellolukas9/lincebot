@@ -1,4 +1,7 @@
 import random
+import json
+import os
+from datetime import datetime
 from src.utils.logger_config import logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
 from src.core.generate_profiles_json import generate_profiles_json
@@ -21,8 +24,14 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
         logger.info("Accessing the profile search.")
         connect_url = config['search_links']['connect']
         page.goto(connect_url)
+
+        # Caminho do diretório de dados (como string)
+        data_dir = config['data']['dir']
+
+        # Garante que o diretório existe
+        os.makedirs(data_dir, exist_ok=True)
         
-        temp = f'{config['data']['dir']}temp.txt'
+        temp = os.path.join(data_dir, "temp.json")
 
         try:
             with open(temp, 'r') as file:
@@ -82,11 +91,24 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
                     break  # Se o botão "Avançar" não for encontrado, encerre o loop.
 
         # Processa os perfis encontrados
-        profile_json = generate_profiles_json(data=raw_profiles, action="connected")
+        profile_json = generate_profiles_json(data=raw_profiles)
         logger.info(f"Processed {counter} profiles, generating JSON.")
 
         # Log de sucesso
         logger.info(f"Successful connection with {counter} profiles!")
+
+        # Obtém a data atual
+        current_date = datetime.now()
+
+        # Formata a data no formato 'ddmmyyyy'
+        formatted_date = current_date.strftime("%d%m%Y")
+
+        # Caminho para o arquivo JSON
+        file_path = os.path.join(data_dir, f"connected_profiles_{formatted_date}.json")
+
+        # Salvando o JSON no arquivo com indentação para melhor legibilidade
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(profile_json, file, indent=4, ensure_ascii=False)
 
         # Criar ou sobrescrever o arquivo, deixando-o vazio
         with open(temp, 'w') as file:

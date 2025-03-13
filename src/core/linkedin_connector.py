@@ -5,6 +5,7 @@ from datetime import datetime
 from src.utils.logger_config import logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
 from src.core.generate_profiles_json import generate_profiles_json
+from src.utils.library import get_current_time
 
 def connect_to_profiles(browser, number_profiles, log_window=None):
     """Conecta aos perfis do LinkedIn conforme o número especificado e exibe os logs."""
@@ -56,15 +57,16 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
                     waiting_time += random.randint(1000, 3000)
                     page.wait_for_timeout(timeout=waiting_time)
 
-                    connect_button.click()
-                    page.wait_for_timeout(timeout=2000)
-                    page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
-                    page.wait_for_timeout(timeout=2000)
+                    # connect_button.click()
+                    # page.wait_for_timeout(timeout=2000)
+                    # page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
+                    # page.wait_for_timeout(timeout=2000)
 
                     profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
                     profile_url = profile.locator('a').first.get_attribute("href")
                     profile_url = profile_url.split('?mini')[0]
                     profile_text = profile_text + '\n' + profile_url
+                    profile_text = profile_text + '\n' + get_current_time()
                     raw_profiles.append(profile_text)
                     name = profile_text.split('\n')[0]
 
@@ -97,22 +99,23 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
         # Log de sucesso
         logger.info(f"Successful connection with {counter} profiles!")
 
-        # Obtém a data atual
-        current_date = datetime.now()
-
-        # Formata a data no formato 'ddmmyyyy'
-        formatted_date = current_date.strftime("%d%m%Y")
-
         # Caminho para o arquivo JSON
-        file_path = os.path.join(data_dir, f"connected_profiles_{formatted_date}.json")
+        file_path = os.path.join(data_dir, "connected.json")
 
-        # Salvando o JSON no arquivo com indentação para melhor legibilidade
-        with open(file_path, 'w', encoding='utf-8') as file:
-            json.dump(profile_json, file, indent=4, ensure_ascii=False)
+        # Carregar o conteúdo atual do arquivo, se ele existir
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                existing_profiles = json.load(f)
+        except FileNotFoundError:
+            # Se o arquivo não existir, iniciar uma lista vazia
+            existing_profiles = []
 
-        # Criar ou sobrescrever o arquivo, deixando-o vazio
-        with open(temp, 'w') as file:
-            pass  # Não escreve nada, apenas mantém o arquivo vazio
+        # Adicionar os novos perfis à lista existente
+        existing_profiles.extend(profile_json)
+
+        # Salvar a lista atualizada no arquivo
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(existing_profiles, f, ensure_ascii=False, indent=4)
 
         # Retorna os perfis conectados
         return profile_json

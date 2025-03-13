@@ -1,16 +1,26 @@
 import tkinter as tk
 import logging
+import sys
+import matplotlib.pyplot as plt
 from .colors import BACKGROUND_COLOR_LIGHT, DARK_BLUE, WHITE, MEDIUM_BLUE, BACKGROUND_LOG
 from .dashboard import show_dashboard
-from .connect import show_connect      # Importa a função do Connect
+from .connect import show_connect
 from .visit import show_visit
-# from message import show_message      # Importa a função do Message
 
 # Configuração da janela principal
 window = tk.Tk()
 window.title("LinceBot Automation")
 window.geometry("800x600")
 window.config(bg=BACKGROUND_COLOR_LIGHT)
+
+# Função para fechar a aplicação corretamente
+def on_closing():
+    plt.close('all')  # Fecha todas as figuras do Matplotlib
+    window.destroy()  # Fecha a janela do Tkinter
+    sys.exit()       # Encerra o programa
+
+# Vincular a função ao evento de fechamento da janela
+window.protocol("WM_DELETE_WINDOW", on_closing)
 
 # Coluna da esquerda (menu)
 left_frame = tk.Frame(window, bg=DARK_BLUE, width=200)
@@ -28,28 +38,33 @@ right_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 content_title = tk.Label(right_frame, text="Dashboard", font=("Arial", 18), bg=WHITE, fg=DARK_BLUE)
 content_title.pack(pady=20)
 
-# Conteúdo dinâmico
-content_label = tk.Label(right_frame, text="Dashboard Content", font=("Arial", 14), bg=WHITE, fg=MEDIUM_BLUE)
-content_label.pack(pady=20)
+# Função para ocultar/mostrar o log
+def toggle_log_frame(show=True):
+    if show:
+        log_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False, pady=10, padx=10)
+    else:
+        log_frame.pack_forget()  # Oculta o log_frame
 
 # Função para limpar o conteúdo da coluna da direita
-def clear_content():
+def clear_content(hide_log=False):
     for widget in right_frame.winfo_children():
-        if widget not in (content_title, content_label):
-        # if widget not in (content_title):
+        if widget != content_title:
             widget.destroy()
+    if hide_log:
+        toggle_log_frame(show=False)  # Oculta o log_frame
+    else:
+        toggle_log_frame(show=True)  # Mostra o log_frame
 
 # Função para carregar o Dashboard inicialmente
 def load_dashboard():
-    clear_content()
-    show_dashboard(right_frame, content_title, content_label)
+    clear_content(hide_log=True)  # Oculta o log_frame no Dashboard
+    show_dashboard(right_frame, content_title)
 
 # Menu de navegação
 menu_items = [
     ("Dashboard", lambda: load_dashboard()),
-    ("Connect", lambda: [clear_content(), show_connect(right_frame, content_title, content_label)]),
-    ("Visit", lambda: [clear_content(), show_visit(right_frame, content_title, content_label)]),
-    # ("Message", lambda: [clear_content(), show_message(right_frame, content_title, content_label)]),
+    ("Visit", lambda: [clear_content(hide_log=False), show_visit(right_frame, content_title)]),
+    ("Connect", lambda: [clear_content(hide_log=False), show_connect(right_frame, content_title)]),
 ]
 
 for item, command in menu_items:

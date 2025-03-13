@@ -40,7 +40,7 @@ def extract_profiles_to_visit(browser, number_profiles):
         waiting_time = 0
 
         while counter < int(number_profiles):
-            logger.info(f"Searching {number_profiles} profiles, {counter} already connected.")
+            logger.info(f"Extracting {number_profiles} profiles, {counter} already extracted.")
             page.wait_for_timeout(timeout=3000)
             profiles = page.locator('div[data-view-name="search-entity-result-universal-template"]').all()
 
@@ -91,5 +91,5 @@ def extract_profiles_to_visit(browser, number_profiles):
 
     except Exception as e:
         # Log de erro
-        logger.error(f"Error while running LinkedIn Connector: {e}")
+        logger.error(f"Error while running Extract Profiles: {e}")
         return None  # Retorna None em caso de erro

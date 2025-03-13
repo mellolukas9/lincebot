@@ -1,7 +1,6 @@
 import random
 import json
 import os
-from datetime import datetime
 from src.utils.logger_config import logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
 from src.core.extract_profiles import extract_profiles_to_visit
@@ -30,19 +29,19 @@ def visit_to_profiles(browser, number_profiles):
         waiting_time = 0
         
         for profile in profiles:
-            logger.info(f"Searching {number_profiles} profiles, {counter} already connected.")
 
             waiting_time += random.randint(1000, 3000)
             page.wait_for_timeout(timeout=waiting_time)
             
             name = profile['name']
+            logger.info(f"Visiting {name} profiles.")
             link = profile['profile_link']
             page.goto(link)
             profile['day_visited'] = get_current_time()
        
             # page.go_back()
-            logger.info(f"Profile {counter} visited | {name}.")
             counter += 1
+            logger.info(f"Profile {counter} visited.")
 
             if counter >= number_profiles:
                 break
@@ -75,5 +74,5 @@ def visit_to_profiles(browser, number_profiles):
 
     except Exception as e:
         # Log de erro
-        logger.error(f"Error while running LinkedIn Connector: {e}")
+        logger.error(f"Error while running LinkedIn Visit: {e}")
         return None  # Retorna None em caso de erro

@@ -10,7 +10,7 @@ def visit_to_profiles(browser, number_profiles):
     """Visita os perfis do LinkedIn conforme o número especificado e exibe os logs."""
     
     # Log do início da execução
-    logger.info("Iniciando o processo de visitas no LinkedIn.")
+    logger.info("Starting the LinkedIn visits process.")
     
     try:
         # Obtém a página já aberta no navegador
@@ -37,7 +37,7 @@ def visit_to_profiles(browser, number_profiles):
             logger.info(f"Visiting {name} profiles.")
             link = profile['profile_link']
             page.goto(link)
-            profile['day_visited'] = get_current_time()
+            profile['timestamp'] = get_current_time()
        
             # page.go_back()
             counter += 1

@@ -5,6 +5,7 @@ import os
 from .colors import DARK_BLUE, BLUE
 from src.config import config
 from src.utils.library import read_json_file, remove_numbers_and_emojis
+from src.main import run_send_messages
 
 logger = logging.getLogger("LinkedInAutomation")
 
@@ -31,7 +32,6 @@ def show_messages(right_frame, content_title):
 
     # Ler os dados de visitas
     visits_file_path = os.path.join(data_dir, "visited.json")
-    
     profiles = read_json_file(visits_file_path)
 
     def split_name(full_name):
@@ -59,6 +59,9 @@ def show_messages(right_frame, content_title):
 
     tree.pack(fill="both", expand=True)
 
+    # Dicionário para armazenar os JSONs dos perfis, associados ao item_id da Treeview
+    profile_data = {}
+
     checkbox_vars = {}
     select_all = tk.BooleanVar(value=False)  # Controle global para selecionar/deselecionar tudo
 
@@ -69,7 +72,9 @@ def show_messages(right_frame, content_title):
         var = tk.BooleanVar(value=False)
         checkbox_vars[first_name] = var
 
-        tree.insert("", "end", values=("", first_name, last_name, role))
+        # Insere a linha na Treeview e armazena o JSON correspondente
+        item_id = tree.insert("", "end", values=("", first_name, last_name, role))
+        profile_data[item_id] = profile  # Associa o item_id ao JSON do perfil
 
     def toggle_selection(event):
         """Ativa ou desativa os checkboxes ao clicar na linha."""
@@ -100,18 +105,21 @@ def show_messages(right_frame, content_title):
             values = tree.item(item, "values")
             first_name = values[1]
             if checkbox_vars[first_name].get():
-                selected_profiles.append(f"{values[1]} {values[2]} ({values[3]})")
+                # Recupera o JSON do perfil associado ao item_id
+                profile_json = profile_data[item]
+                selected_profiles.append(profile_json)  # Adiciona o JSON à lista de selecionados
 
         if not selected_profiles:
             messagebox.showerror("Error", "No profiles selected.")
             return
 
-        for profile in selected_profiles:
-            logger.info(f"Sending message to {profile}.")
+        # Exibe os JSONs dos perfis selecionados (para teste)
+        # for profile in selected_profiles:
+        #     logger.info(f"Selected profile: {profile}")
 
         messagebox.showinfo("Success", f"Messages sent to {len(selected_profiles)} profiles!")
+        run_send_messages(selected_profiles, logger)
 
     send_button = tk.Button(right_frame, text="Send Message to Selected", font=("Arial", 12), bg=BLUE, fg="white",
                             command=send_message_to_selected, relief="raised", width=25)
-    
     send_button.pack(pady=10)

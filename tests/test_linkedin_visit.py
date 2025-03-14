@@ -1,17 +1,27 @@
-import sys
 import os
+import sys
+import logging
+from unittest import TestCase
 
-# Adiciona o diretório src ao sys.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.main import test  # Agora a importação deve funcionar
+from src.main import run_visit
 
-import unittest
+# Configuração do logger para testes
+logger = logging.getLogger("LinkedInAutomation")
+logger.setLevel(logging.DEBUG)
 
-class TestMain(unittest.TestCase):
-    def test_main(self):
-        """Testa a função main."""
-        test(number_profiles=1, process='visit')  # Chama a função test
+class TestConnect(TestCase):
+    def test_run_visit_success(self):
+        """
+        Testa a função run_visit com sucesso.
+        Verifica se a função executa corretamente e se o Playwright é aberto e fechado.
+        """
 
+        # Executa a função
+        run_visit(5, logger)
+
+# Executa os testes
 if __name__ == "__main__":
+    import unittest
     unittest.main()

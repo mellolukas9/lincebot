@@ -2,6 +2,7 @@ import os
 import glob
 import json
 import re
+import time
 from datetime import datetime
 
 def get_last_created_file(directory, prefix):
@@ -86,3 +87,13 @@ def get_current_time():
 def remove_numbers_and_emojis(text):
     # Remove números e emojis, mantendo apenas letras e espaços
     return re.sub(r'[^a-zA-ZÀ-ÿ\s]', '', text)
+
+def type_slowly(element, text, delay=0.1):
+    # Limpa o campo de entrada antes de digitar devagar
+    element.clear()
+    time.sleep(0.5)  # Aguarda meio segundo após limpar o campo
+    
+    # Digita devagar no campo de entrada
+    for char in text:
+        element.type(char)
+        time.sleep(delay)

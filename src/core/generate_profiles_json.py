@@ -17,7 +17,7 @@ def generate_profiles_json(data):
     "current_role": "Função Atual (pode ser null)",
     "common_connections": ["Conexão 1", "Conexão 2", ...]
     "profile_link": "https://www.linkedin.com/in/name123/"
-    "day_visited": "2025-03-13 14:00:00"
+    "timestamp": "2025-03-13 14:00:00"
     }
 
     Aqui está a lista de dados dos perfis:

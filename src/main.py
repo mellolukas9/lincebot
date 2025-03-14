@@ -3,116 +3,138 @@ import threading
 from src.core.playwright_manager import start_playwright, close_playwright
 from src.core.linkedin_connector import connect_to_profiles
 from src.core.linkedin_visit import visit_to_profiles
+from src.core.linkedin_send_messages import send_messages_to_profiles
 
 # Configuração do logger
 logger = logging.getLogger("LinkedInAutomation")
 logger.setLevel(logging.DEBUG)
 
-# Função de validação do número de perfis
 def validate_number_input(value):
+    """
+    Valida se o valor é um número inteiro positivo.
+
+    :param value: Valor a ser validado.
+    :return: True se for um número positivo, False caso contrário.
+    """
     try:
         num = int(value)
-        if num > 0:
-            return True
-        return False
+        return num > 0
     except ValueError:
         return False
 
-# Função que será chamada ao clicar no botão
+def execute_playwright_task(task, *args, logger=None, event=None):
+    """
+    Executa uma tarefa usando o Playwright e gerencia a abertura e fechamento do navegador.
+
+    :param task: Função que será executada com o navegador aberto.
+    :param args: Argumentos para a função task.
+    :param logger: Logger para registro de logs.
+    :param event: Evento para sinalizar a conclusão da tarefa.
+    """
+    try:
+        logger.info("Starting Playwright process...")
+        browser, playwright = start_playwright()
+        if not browser:
+            raise RuntimeError("Failed to start Playwright.")
+
+        logger.info("Playwright started successfully.")
+        result = task(browser, *args)
+        
+        if result:
+            logger.info(f"Task completed successfully: {result}")
+        else:
+            logger.error("An error occurred during the task execution.")
+
+    except Exception as e:
+        logger.error(f"Error during execution: {e}")
+        raise
+
+    finally:
+        close_playwright(browser, playwright)
+        logger.info("Playwright process completed.")
+        if event:
+            event.set()
+
 def connect(number_profiles, logger, event):
-    try:
-        logger.info("Starting visit function.")
-        if not validate_number_input(number_profiles):
-            raise ValueError("Please enter a valid positive number of profiles.")
+    """
+    Conecta a um número específico de perfis no LinkedIn.
 
-        # Log no console e na interface gráfica
-        logger.info("Starting the Playwright process...")
+    :param number_profiles: Número de perfis a serem conectados.
+    :param logger: Logger para registro de logs.
+    :param event: Evento para sinalizar a conclusão da tarefa.
+    """
+    if not validate_number_input(number_profiles):
+        raise ValueError("Please enter a valid positive number of profiles.")
 
-        # Inicia o Playwright
-        browser, playwright = start_playwright()
-        if not browser:
-            raise RuntimeError("Failed to start Playwright.")
+    execute_playwright_task(connect_to_profiles, number_profiles, logger=logger, event=event)
 
-        logger.info("Playwright started successfully.")
-
-        # Conecta aos perfis do LinkedIn
-        profile_json = connect_to_profiles(browser, number_profiles)
-
-        # Exibe o resultado
-        if profile_json:
-            logger.info(f"Successfully sent connection requests to {int(number_profiles)} profiles!")
-        else:
-            logger.error("An error occurred during the process.")
-
-    except Exception as e:
-        logger.error(f"Error during execution: {e}")
-        raise
-
-    finally:
-        # Fecha o navegador após terminar
-        close_playwright(browser, playwright)
-        logger.info("Connect function completed.")
-        event.set()
-
-# Função que será chamada ao clicar no botão
 def visit(number_profiles, logger, event):
-    try:
-        logger.info("Starting visit function.")
-        if not validate_number_input(number_profiles):
-            raise ValueError("Please enter a valid positive number of profiles.")
+    """
+    Visita um número específico de perfis no LinkedIn.
 
-        # Log no console e na interface gráfica
-        logger.info("Starting the Playwright process...")
+    :param number_profiles: Número de perfis a serem visitados.
+    :param logger: Logger para registro de logs.
+    :param event: Evento para sinalizar a conclusão da tarefa.
+    """
+    if not validate_number_input(number_profiles):
+        raise ValueError("Please enter a valid positive number of profiles.")
 
-        # Inicia o Playwright
-        browser, playwright = start_playwright()
-        if not browser:
-            raise RuntimeError("Failed to start Playwright.")
+    execute_playwright_task(visit_to_profiles, number_profiles, logger=logger, event=event)
 
-        logger.info("Playwright started successfully.")
+def send_messages(profiles, logger, event):
+    """
+    Envia mensagens para uma lista de perfis no LinkedIn.
 
-        # Conecta aos perfis do LinkedIn
-        profile_json = visit_to_profiles(browser, number_profiles)
+    :param profiles: Lista de perfis para enviar mensagens.
+    :param logger: Logger para registro de logs.
+    :param event: Evento para sinalizar a conclusão da tarefa.
+    """
+    execute_playwright_task(send_messages_to_profiles, profiles, logger=logger, event=event)
 
-        # Exibe o resultado
-        if profile_json:
-            logger.info(f"Successfully visit requests to {int(number_profiles)} profiles!")
-        else:
-            logger.error("An error occurred during the process.")
+def run_connect(number_profiles, logger):
+    """
+    Executa a tarefa de conexão com perfis do LinkedIn.
 
-    except Exception as e:
-        logger.error(f"Error during execution: {e}")
-        raise
-
-    finally:
-        # Fecha o navegador após terminar
-        close_playwright(browser, playwright)
-        logger.info("Visit function completed.")
-        event.set()
-
-# Função para executar a função visit em uma nova thread
-def start_process(number_profiles, logger, process):
-    # Cria o evento
+    :param number_profiles: Número de perfis a serem conectados.
+    :param logger: Logger para registro de logs.
+    """
     event = threading.Event()
-    
-    # Cria a thread para executar a função visit
-    if process == 'connect':
-        thread = threading.Thread(target=connect, args=(number_profiles, logger, event), daemon=True)
-    elif process == 'visit':
-        thread = threading.Thread(target=visit, args=(number_profiles, logger, event), daemon=True)
-    
-    # Inicia a thread
+    thread = threading.Thread(target=connect, args=(number_profiles, logger, event), daemon=True)
     thread.start()
-    
-    # Retorna o evento para garantir que a execução foi completada
-    return event
+    event.wait()
 
-# Função principal
-def test(number_profiles, process):
-    """Função principal que inicia o processo de conexão."""
-    # number_profiles = 5  # Número de perfis a serem conectados
-    event = start_process(number_profiles, logger, process)
-    event.wait()  # Aguarda a execução da thread terminar
+def run_visit(number_profiles, logger):
+    """
+    Executa a tarefa de visita a perfis do LinkedIn.
 
+    :param number_profiles: Número de perfis a serem visitados.
+    :param logger: Logger para registro de logs.
+    """
+    event = threading.Event()
+    thread = threading.Thread(target=visit, args=(number_profiles, logger, event), daemon=True)
+    thread.start()
+    event.wait()
+
+def run_send_messages(profiles, logger):
+    """
+    Executa a tarefa de envio de mensagens a perfis do LinkedIn.
+
+    :param profiles: Lista de perfis para enviar mensagens.
+    :param logger: Logger para registro de logs.
+    """
+    event = threading.Event()
+    thread = threading.Thread(target=send_messages, args=(profiles, logger, event), daemon=True)
+    thread.start()
+    event.wait()
+
+# Exemplo de uso
 # if __name__ == "__main__":
-#     main()
+#     # Conectar a 5 perfis
+#     run_connect(5, logger)
+
+#     # Visitar 3 perfis
+#     run_visit(3, logger)
+
+#     # Enviar mensagens para uma lista de perfis
+#     profiles = ["profile1", "profile2", "profile3"]
+#     run_send_messages(profiles, logger)

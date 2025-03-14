@@ -32,7 +32,7 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
         # Garante que o diretório existe
         os.makedirs(data_dir, exist_ok=True)
         
-        temp = os.path.join(data_dir, "temp.json")
+        temp = os.path.join(data_dir, "temp.txt")
 
         try:
             with open(temp, 'r') as file:

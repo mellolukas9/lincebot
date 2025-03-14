@@ -6,6 +6,7 @@ from .colors import BACKGROUND_COLOR_LIGHT, DARK_BLUE, WHITE, MEDIUM_BLUE, BACKG
 from .dashboard import show_dashboard
 from .connect import show_connect
 from .visit import show_visit
+from .messages import show_messages
 
 # Configuração da janela principal
 window = tk.Tk()
@@ -65,6 +66,7 @@ menu_items = [
     ("Dashboard", lambda: load_dashboard()),
     ("Visit", lambda: [clear_content(hide_log=False), show_visit(right_frame, content_title)]),
     ("Connect", lambda: [clear_content(hide_log=False), show_connect(right_frame, content_title)]),
+    ("Messages", lambda: [clear_content(hide_log=True), show_messages(right_frame, content_title)]),
 ]
 
 for item, command in menu_items:

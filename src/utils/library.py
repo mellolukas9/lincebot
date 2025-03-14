@@ -1,6 +1,7 @@
 import os
 import glob
 import json
+import re
 from datetime import datetime
 
 def get_last_created_file(directory, prefix):
@@ -81,3 +82,7 @@ def get_current_time():
     Retorna a data e hora atual no formato 'YYYY-MM-DD HH:MM:SS'.
     """
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def remove_numbers_and_emojis(text):
+    # Remove números e emojis, mantendo apenas letras e espaços
+    return re.sub(r'[^a-zA-ZÀ-ÿ\s]', '', text)

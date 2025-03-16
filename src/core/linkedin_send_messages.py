@@ -2,12 +2,12 @@ import random
 import json
 import os
 import logging
-from src.utils.logger_config import logger  # Importando o logger configurado
+from src.utils.logger_config import setup_logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
 from src.utils.library import get_current_time, type_slowly
 from src.core.custom_message import evaluate_profile_and_respond
 
-logger = logging.getLogger("LinkedInAutomation")
+logger = setup_logger()
 
 def send_messages_to_profiles(browser, profiles):
     """Visita os perfis do LinkedIn conforme o número especificado e exibe os logs."""

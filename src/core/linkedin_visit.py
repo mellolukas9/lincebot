@@ -1,10 +1,12 @@
 import random
 import json
 import os
-from src.utils.logger_config import logger  # Importando o logger configurado
+from src.utils.logger_config import setup_logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
 from src.core.extract_profiles import extract_profiles_to_visit
 from src.utils.library import get_current_time
+
+logger = setup_logger()
 
 def visit_to_profiles(browser, number_profiles):
     """Visita os perfis do LinkedIn conforme o número especificado e exibe os logs."""

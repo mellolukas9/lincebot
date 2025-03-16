@@ -1,10 +1,12 @@
 import random
 import json
 import os
-from src.utils.logger_config import logger  # Importando o logger configurado
+from src.utils.logger_config import setup_logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
 from src.core.generate_profiles_json import generate_profiles_json
 from src.utils.library import is_name_in_json
+
+logger = setup_logger()
 
 def extract_profiles_to_visit(browser, number_profiles):
     """Visita os perfis do LinkedIn conforme o número especificado e exibe os logs."""
@@ -22,7 +24,7 @@ def extract_profiles_to_visit(browser, number_profiles):
         # logger.info("LinkedIn home page loaded.")
         
         logger.info("Accessing the profile search.")
-        visit_url = config['search_links']['extract_profiles']['rpa_recruiters']
+        visit_url = config['search_links']['visit']
         # connect_url = connect_url = config['search_links']['visit']
         page.goto(visit_url)
 

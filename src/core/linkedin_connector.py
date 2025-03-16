@@ -2,10 +2,12 @@ import random
 import json
 import os
 from datetime import datetime
-from src.utils.logger_config import logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
 from src.core.generate_profiles_json import generate_profiles_json
 from src.utils.library import get_current_time
+from src.utils.logger_config import setup_logger
+
+logger = setup_logger()
 
 def connect_to_profiles(browser, number_profiles, log_window=None):
     """Conecta aos perfis do LinkedIn conforme o número especificado e exibe os logs."""

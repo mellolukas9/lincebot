@@ -1,13 +1,16 @@
-import logging
 import threading
+from src.utils.logger_config import setup_logger
 from src.core.playwright_manager import start_playwright, close_playwright
 from src.core.linkedin_connector import connect_to_profiles
 from src.core.linkedin_visit import visit_to_profiles
 from src.core.linkedin_send_messages import send_messages_to_profiles
 
+# Configurar o logger
+logger = setup_logger()
+
 # Configuração do logger
-logger = logging.getLogger("LinkedInAutomation")
-logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger("LinkedInAutomation")
+# logger.setLevel(logging.DEBUG)
 
 def validate_number_input(value):
     """
@@ -22,7 +25,7 @@ def validate_number_input(value):
     except ValueError:
         return False
 
-def execute_playwright_task(task, *args, logger=None, event=None):
+def execute_playwright_task(task, *args, logger=None, event=None, log_queue=None):
     """
     Executa uma tarefa usando o Playwright e gerencia a abertura e fechamento do navegador.
 
@@ -30,111 +33,118 @@ def execute_playwright_task(task, *args, logger=None, event=None):
     :param args: Argumentos para a função task.
     :param logger: Logger para registro de logs.
     :param event: Evento para sinalizar a conclusão da tarefa.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     try:
         logger.info("Starting Playwright process...")
+        if log_queue:
+            log_queue.put("Starting Playwright process...")
         browser, playwright = start_playwright()
         if not browser:
             raise RuntimeError("Failed to start Playwright.")
 
         logger.info("Playwright started successfully.")
+        if log_queue:
+            log_queue.put("Playwright started successfully.")
         result = task(browser, *args)
         
         if result:
             logger.info(f"Task completed successfully: {result}")
+            if log_queue:
+                log_queue.put(f"Task completed successfully: {result}")
         else:
             logger.error("An error occurred during the task execution.")
+            if log_queue:
+                log_queue.put("An error occurred during the task execution.")
 
     except Exception as e:
         logger.error(f"Error during execution: {e}")
+        if log_queue:
+            log_queue.put(f"Error during execution: {e}")
         raise
 
     finally:
         close_playwright(browser, playwright)
         logger.info("Playwright process completed.")
+        if log_queue:
+            log_queue.put("Playwright process completed.")
         if event:
             event.set()
 
-def connect(number_profiles, logger, event):
+def connect(number_profiles, logger, event, log_queue):
     """
     Conecta a um número específico de perfis no LinkedIn.
 
     :param number_profiles: Número de perfis a serem conectados.
     :param logger: Logger para registro de logs.
     :param event: Evento para sinalizar a conclusão da tarefa.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     if not validate_number_input(number_profiles):
         raise ValueError("Please enter a valid positive number of profiles.")
 
-    execute_playwright_task(connect_to_profiles, number_profiles, logger=logger, event=event)
+    execute_playwright_task(connect_to_profiles, number_profiles, logger=logger, event=event, log_queue=log_queue)
 
-def visit(number_profiles, logger, event):
+def visit(number_profiles, logger, event, log_queue):
     """
     Visita um número específico de perfis no LinkedIn.
 
     :param number_profiles: Número de perfis a serem visitados.
     :param logger: Logger para registro de logs.
     :param event: Evento para sinalizar a conclusão da tarefa.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     if not validate_number_input(number_profiles):
         raise ValueError("Please enter a valid positive number of profiles.")
 
-    execute_playwright_task(visit_to_profiles, number_profiles, logger=logger, event=event)
+    execute_playwright_task(visit_to_profiles, number_profiles, logger=logger, event=event, log_queue=log_queue)
 
-def send_messages(profiles, logger, event):
+def send_messages(profiles, logger, event, log_queue):
     """
     Envia mensagens para uma lista de perfis no LinkedIn.
 
     :param profiles: Lista de perfis para enviar mensagens.
     :param logger: Logger para registro de logs.
     :param event: Evento para sinalizar a conclusão da tarefa.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
     """
-    execute_playwright_task(send_messages_to_profiles, profiles, logger=logger, event=event)
+    execute_playwright_task(send_messages_to_profiles, profiles, logger=logger, event=event, log_queue=log_queue)
 
-def run_connect(number_profiles, logger):
+def run_connect(number_profiles, logger, log_queue):
     """
     Executa a tarefa de conexão com perfis do LinkedIn.
 
     :param number_profiles: Número de perfis a serem conectados.
     :param logger: Logger para registro de logs.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     event = threading.Event()
-    thread = threading.Thread(target=connect, args=(number_profiles, logger, event), daemon=True)
+    thread = threading.Thread(target=connect, args=(number_profiles, logger, event, log_queue), daemon=True)
     thread.start()
     event.wait()
 
-def run_visit(number_profiles, logger):
+def run_visit(number_profiles, logger, log_queue):
     """
     Executa a tarefa de visita a perfis do LinkedIn.
 
     :param number_profiles: Número de perfis a serem visitados.
     :param logger: Logger para registro de logs.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     event = threading.Event()
-    thread = threading.Thread(target=visit, args=(number_profiles, logger, event), daemon=True)
+    thread = threading.Thread(target=visit, args=(number_profiles, logger, event, log_queue), daemon=True)
     thread.start()
     event.wait()
 
-def run_send_messages(profiles, logger):
+def run_send_messages(profiles, logger, log_queue):
     """
     Executa a tarefa de envio de mensagens a perfis do LinkedIn.
 
     :param profiles: Lista de perfis para enviar mensagens.
     :param logger: Logger para registro de logs.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     event = threading.Event()
-    thread = threading.Thread(target=send_messages, args=(profiles, logger, event), daemon=True)
+    thread = threading.Thread(target=send_messages, args=(profiles, logger, event, log_queue), daemon=True)
     thread.start()
     event.wait()
-
-# Exemplo de uso
-# if __name__ == "__main__":
-#     # Conectar a 5 perfis
-#     run_connect(5, logger)
-
-#     # Visitar 3 perfis
-#     run_visit(3, logger)
-
-#     # Enviar mensagens para uma lista de perfis
-#     profiles = ["profile1", "profile2", "profile3"]
-#     run_send_messages(profiles, logger)

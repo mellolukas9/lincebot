@@ -1,14 +1,26 @@
 import tkinter as tk
-from tkinter import messagebox
-import logging
-import threading
-import queue
+from tkinter import ttk, messagebox
 from .colors import DARK_BLUE, WHITE, BLUE
+from src.utils.logger_config import setup_logger
 from src.main import run_visit  # Importa a função run_visit
+import json
+import os
+from src.config import config  # Importa a configuração para carregar os links
 
-logger = logging.getLogger("LinkedInAutomation")
+logger = setup_logger()
 
-def show_visit(right_frame, content_title, window, log_text, add_thread):
+# Caminho do arquivo de links
+data_path = config['paths']['data']
+links_file_path = os.path.join(data_path, "links.json")
+
+def load_links():
+    """Carrega os links salvos."""
+    if os.path.exists(links_file_path):
+        with open(links_file_path, "r", encoding="utf-8") as file:
+            return json.load(file)
+    return []
+
+def show_visit(right_frame, content_title, task_manager):
     """Cria a interface de visita a perfis no LinkedIn dentro do right_frame."""
 
     # Atualiza o título da aba
@@ -29,6 +41,16 @@ def show_visit(right_frame, content_title, window, log_text, add_thread):
         justify="center"
     )
     visit_description.pack(pady=10)
+
+    # Carregar links salvos
+    links = load_links()
+    link_options = [link["name"] for link in links]
+
+    # Dropdown para selecionar o link
+    tk.Label(right_frame, text="Select Link:", font=("Arial", 12), bg=WHITE).pack(pady=5)
+    link_var = tk.StringVar()
+    link_dropdown = ttk.Combobox(right_frame, textvariable=link_var, values=link_options, state="readonly")
+    link_dropdown.pack(pady=5)
 
     # Placeholder funcional
     placeholder_text = "Number of profiles..."
@@ -52,59 +74,27 @@ def show_visit(right_frame, content_title, window, log_text, add_thread):
     visit_entry.bind("<FocusOut>", on_focus_out)
     visit_entry.pack(pady=5)
 
-    # Queue para comunicação entre threads
-    log_queue = queue.Queue()
-
-    # Função para verificar a queue e atualizar a interface
-    def check_queue():
-        try:
-            while True:
-                message = log_queue.get_nowait()
-                log_text.config(state=tk.NORMAL)
-                log_text.insert(tk.END, message + "\n")
-                log_text.config(state=tk.DISABLED)
-                log_text.yview(tk.END)
-        except queue.Empty:
-            pass
-
-        # Verifica a queue novamente após 100ms
-        window.after(100, check_queue)
-
-    # Função para iniciar a visita
     def start_visit():
         num_profiles = visit_entry.get().strip()
+        selected_link_name = link_var.get()
+        selected_link = next((link["link"] for link in links if link["name"] == selected_link_name), None)
+
         if not num_profiles.isdigit():
             messagebox.showerror("Error", "Please enter a valid number.")
+            return
+
+        if not selected_link:
+            messagebox.showerror("Error", "Please select a valid link.")
             return
 
         # Desabilita o botão de visita enquanto a tarefa está em execução
         visit_button.config(state=tk.DISABLED)
 
-        # Função para reabilitar o botão após a execução (sucesso ou erro)
-        def reenable_button():
-            visit_button.config(state=tk.NORMAL)
+        # Obtém a fila de logs do TaskManager
+        log_queue = task_manager.log_queue
 
-        # Função para executar a tarefa em uma thread
-        def run_visit_task():
-            try:
-                run_visit(int(num_profiles), logger, log_queue)
-            except Exception as e:
-                logger.error(f"Error during visit: {e}")
-                log_queue.put(f"Error during visit: {e}")
-            finally:
-                # Reabilita o botão após a execução (sucesso ou erro)
-                window.after(0, reenable_button)
-
-        # Cria e inicia a thread
-        thread = threading.Thread(
-            target=run_visit_task,
-            daemon=True
-        )
-        thread.start()
-        add_thread(thread)  # Registra a thread
-
-        # Verifica a queue periodicamente para atualizar a interface
-        check_queue()
+        # Executa a tarefa usando o TaskManager
+        task_manager.run_task(run_visit, int(num_profiles), selected_link, logger, log_queue, button=visit_button)
 
     # Botão de visita
     visit_button = tk.Button(right_frame, text="Visit", font=("Arial", 12), bg=BLUE, fg="white",

@@ -9,8 +9,8 @@ from src.utils.logger_config import setup_logger
 
 logger = setup_logger()
 
-def connect_to_profiles(browser, number_profiles, log_window=None):
-    """Conecta aos perfis do LinkedIn conforme o número especificado e exibe os logs."""
+def connect_to_profiles(browser, number_profiles, link):
+    """Conecta aos perfis do LinkedIn conforme o número especificado."""
     
     # Log do início da execução
     logger.info("Starting the LinkedIn connection process.")
@@ -25,16 +25,16 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
         logger.info("LinkedIn home page loaded.")
         
         logger.info("Accessing the profile search.")
-        connect_url = config['search_links']['connect']
-        page.goto(connect_url)
+        # connect_url = config['search_links']['connect']
+        page.goto(link)
 
         # Caminho do diretório de dados (como string)
-        data_dir = config['data']['dir']
+        data_path = config['paths']['data']
 
         # Garante que o diretório existe
-        os.makedirs(data_dir, exist_ok=True)
+        os.makedirs(data_path, exist_ok=True)
         
-        temp = os.path.join(data_dir, "temp.txt")
+        temp = os.path.join(data_path, "temp.txt")
 
         try:
             with open(temp, 'r') as file:
@@ -59,10 +59,10 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
                     waiting_time += random.randint(1000, 3000)
                     page.wait_for_timeout(timeout=waiting_time)
 
-                    # connect_button.click()
-                    # page.wait_for_timeout(timeout=2000)
-                    # page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
-                    # page.wait_for_timeout(timeout=2000)
+                    connect_button.click()
+                    page.wait_for_timeout(timeout=2000)
+                    page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
+                    page.wait_for_timeout(timeout=2000)
 
                     profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
                     profile_url = profile.locator('a').first.get_attribute("href")
@@ -102,7 +102,7 @@ def connect_to_profiles(browser, number_profiles, log_window=None):
         logger.info(f"Successful connection with {counter} profiles!")
 
         # Caminho para o arquivo JSON
-        file_path = os.path.join(data_dir, "connected.json")
+        file_path = os.path.join(data_path, "connected.json")
 
         # Carregar o conteúdo atual do arquivo, se ele existir
         try:

@@ -35,6 +35,8 @@ def execute_playwright_task(task, *args, logger=None, event=None, log_queue=None
     :param event: Evento para sinalizar a conclusão da tarefa.
     :param log_queue: Queue para enviar logs para a interface gráfica.
     """
+    browser = None
+    playwright = None
     try:
         logger.info("Starting Playwright process...")
         if log_queue:
@@ -64,14 +66,15 @@ def execute_playwright_task(task, *args, logger=None, event=None, log_queue=None
         raise
 
     finally:
-        close_playwright(browser, playwright)
+        if browser or playwright:
+            close_playwright(browser, playwright)
         logger.info("Playwright process completed.")
         if log_queue:
             log_queue.put("Playwright process completed.")
         if event:
             event.set()
 
-def connect(number_profiles, logger, event, log_queue):
+def connect(number_profiles, link, logger, event, log_queue):
     """
     Conecta a um número específico de perfis no LinkedIn.
 
@@ -83,9 +86,9 @@ def connect(number_profiles, logger, event, log_queue):
     if not validate_number_input(number_profiles):
         raise ValueError("Please enter a valid positive number of profiles.")
 
-    execute_playwright_task(connect_to_profiles, number_profiles, logger=logger, event=event, log_queue=log_queue)
+    execute_playwright_task(connect_to_profiles, number_profiles, link, logger=logger, event=event, log_queue=log_queue)
 
-def visit(number_profiles, logger, event, log_queue):
+def visit(number_profiles, link, logger, event, log_queue):
     """
     Visita um número específico de perfis no LinkedIn.
 
@@ -97,7 +100,7 @@ def visit(number_profiles, logger, event, log_queue):
     if not validate_number_input(number_profiles):
         raise ValueError("Please enter a valid positive number of profiles.")
 
-    execute_playwright_task(visit_to_profiles, number_profiles, logger=logger, event=event, log_queue=log_queue)
+    execute_playwright_task(visit_to_profiles, number_profiles, link, logger=logger, event=event, log_queue=log_queue)
 
 def send_messages(profiles, logger, event, log_queue):
     """
@@ -110,7 +113,7 @@ def send_messages(profiles, logger, event, log_queue):
     """
     execute_playwright_task(send_messages_to_profiles, profiles, logger=logger, event=event, log_queue=log_queue)
 
-def run_connect(number_profiles, logger, log_queue):
+def run_connect(number_profiles, link, logger, log_queue):
     """
     Executa a tarefa de conexão com perfis do LinkedIn.
 
@@ -119,11 +122,11 @@ def run_connect(number_profiles, logger, log_queue):
     :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     event = threading.Event()
-    thread = threading.Thread(target=connect, args=(number_profiles, logger, event, log_queue), daemon=True)
+    thread = threading.Thread(target=connect, args=(number_profiles, link, logger, event, log_queue), daemon=True)
     thread.start()
     event.wait()
 
-def run_visit(number_profiles, logger, log_queue):
+def run_visit(number_profiles, link, logger, log_queue):
     """
     Executa a tarefa de visita a perfis do LinkedIn.
 
@@ -132,11 +135,11 @@ def run_visit(number_profiles, logger, log_queue):
     :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     event = threading.Event()
-    thread = threading.Thread(target=visit, args=(number_profiles, logger, event, log_queue), daemon=True)
+    thread = threading.Thread(target=visit, args=(number_profiles, link, logger, event, log_queue), daemon=True)
     thread.start()
     event.wait()
 
-def run_send_messages(profiles, logger, log_queue):
+def run_send_messages(profiles, link, logger, log_queue):
     """
     Executa a tarefa de envio de mensagens a perfis do LinkedIn.
 
@@ -145,6 +148,6 @@ def run_send_messages(profiles, logger, log_queue):
     :param log_queue: Queue para enviar logs para a interface gráfica.
     """
     event = threading.Event()
-    thread = threading.Thread(target=send_messages, args=(profiles, logger, event, log_queue), daemon=True)
+    thread = threading.Thread(target=send_messages, args=(profiles, link, logger, event, log_queue), daemon=True)
     thread.start()
     event.wait()

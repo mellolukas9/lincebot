@@ -3,13 +3,13 @@ import json
 import os
 from src.utils.logger_config import setup_logger  # Importando o logger configurado
 from src.config import config  # Importa as configurações
-from src.core.extract_profiles import extract_profiles_to_visit
+from src.core.extract_profiles import extract_profiles_to_process
 from src.utils.library import get_current_time
 
 logger = setup_logger()
 
-def visit_to_profiles(browser, number_profiles):
-    """Visita os perfis do LinkedIn conforme o número especificado e exibe os logs."""
+def visit_to_profiles(browser, number_profiles, link):
+    """Visita os perfis do LinkedIn conforme o número especificado."""
     
     # Log do início da execução
     logger.info("Starting the LinkedIn visits process.")
@@ -23,8 +23,16 @@ def visit_to_profiles(browser, number_profiles):
         page.wait_for_timeout(timeout=3000)
         logger.info("LinkedIn home page loaded.")
 
-        new_profiles = extract_profiles_to_visit(browser, number_profiles)
-        profiles = new_profiles
+        # Caminho do diretório de dados (como string)
+        data_path = config['paths']['data']
+
+        # Garante que o diretório existe
+        os.makedirs(data_path, exist_ok=True)
+
+        # Caminho para o arquivo JSON
+        file_path = os.path.join(data_path, "visited.json")
+
+        profiles = extract_profiles_to_process(browser, number_profiles, link, file_path)
 
         # processed_profiles = []
         counter = 0
@@ -47,15 +55,6 @@ def visit_to_profiles(browser, number_profiles):
 
             if counter >= number_profiles:
                 break
-
-        # Caminho do diretório de dados (como string)
-        data_dir = config['data']['dir']
-
-        # Garante que o diretório existe
-        os.makedirs(data_dir, exist_ok=True)
-
-        # Caminho para o arquivo JSON
-        file_path = os.path.join(data_dir, "visited.json")
 
         # Carregar o conteúdo atual do arquivo, se ele existir
         try:

@@ -1,17 +1,31 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 import logging
-import threading
-import queue
+import json
+import os
 from .colors import DARK_BLUE, WHITE, BLUE
 from src.main import run_connect  # Importa a função run_connect
+from src.config import config
 
 logger = logging.getLogger("LinkedInAutomation")
 
-def show_connect(right_frame, content_title, window, log_text, add_thread):
+data_path = config['paths']['data']
+links_file_path = os.path.join(data_path, "links.json")
+
+def load_links():
+    """Carrega os links salvos."""
+    if os.path.exists(links_file_path):
+        try:
+            with open(links_file_path, "r", encoding="utf-8") as file:
+                return json.load(file)
+        except json.JSONDecodeError:
+            logger.error("Erro ao carregar links.json: Formato inválido.")
+            return []
+    return []
+
+def show_connect(right_frame, content_title, task_manager):
     """Cria a interface de conexão no LinkedIn dentro do right_frame."""
 
-    # Atualiza o título da aba
     content_title.config(text="Connect")
 
     # Título da tela de conexão
@@ -30,7 +44,23 @@ def show_connect(right_frame, content_title, window, log_text, add_thread):
     )
     connect_description.pack(pady=10)
 
-    # Placeholder funcional
+    # Carregar links salvos
+    links = load_links()
+    link_options = [link["name"] for link in links]
+
+    # Variável para armazenar a seleção do usuário
+    link_var = tk.StringVar(value="Select a link" if not link_options else link_options[0])
+
+    # Dropdown para selecionar o link
+    tk.Label(right_frame, text="Select Link:", font=("Arial", 12), bg=WHITE).pack(pady=5)
+    link_dropdown = ttk.Combobox(right_frame, textvariable=link_var, values=link_options, state="readonly")
+    link_dropdown.pack(pady=5)
+
+    # Se houver links, seleciona o primeiro automaticamente
+    if link_options:
+        link_dropdown.current(0)
+
+    # Campo de entrada para número de perfis
     placeholder_text = "Number of profiles..."
     
     def on_entry_click(event):
@@ -52,61 +82,34 @@ def show_connect(right_frame, content_title, window, log_text, add_thread):
     connect_entry.bind("<FocusOut>", on_focus_out)
     connect_entry.pack(pady=5)
 
-    # Queue para comunicação entre threads
-    log_queue = queue.Queue()
-
-    # Função para verificar a queue e atualizar a interface
-    def check_queue():
-        try:
-            while True:
-                message = log_queue.get_nowait()
-                log_text.config(state=tk.NORMAL)
-                log_text.insert(tk.END, message + "\n")
-                log_text.config(state=tk.DISABLED)
-                log_text.yview(tk.END)
-        except queue.Empty:
-            pass
-
-        # Verifica a queue novamente após 100ms
-        window.after(100, check_queue)
+    # Label de status para feedback
+    status_label = tk.Label(right_frame, text="", font=("Arial", 10), bg=WHITE, fg="green")
+    status_label.pack(pady=5)
 
     # Função para iniciar a conexão
     def start_connect():
         num_profiles = connect_entry.get().strip()
+        selected_link_name = link_var.get()
+        selected_link = next((link["link"] for link in links if link["name"] == selected_link_name), None)
+
         if not num_profiles.isdigit():
             messagebox.showerror("Error", "Please enter a valid number.")
+            return
+
+        if not selected_link:
+            messagebox.showerror("Error", "Please select a valid link.")
             return
 
         # Desabilita o botão de conexão enquanto a tarefa está em execução
         connect_button.config(state=tk.DISABLED)
 
-        # Função para reabilitar o botão após a execução (sucesso ou erro)
-        def reenable_button():
-            connect_button.config(state=tk.NORMAL)
+        # Obtém a fila de logs do TaskManager
+        log_queue = task_manager.log_queue
 
-        # Função para executar a tarefa em uma thread
-        def run_connect_task():
-            try:
-                run_connect(int(num_profiles), logger, log_queue)
-            except Exception as e:
-                logger.error(f"Error during connection: {e}")
-                log_queue.put(f"Error during connection: {e}")
-            finally:
-                # Reabilita o botão após a execução (sucesso ou erro)
-                window.after(0, reenable_button)
-
-        # Cria e inicia a thread
-        thread = threading.Thread(
-            target=run_connect_task,
-            daemon=True
-        )
-        thread.start()
-        add_thread(thread)  # Registra a thread
-
-        # Verifica a queue periodicamente para atualizar a interface
-        check_queue()
+        # Executa a tarefa usando o TaskManager
+        task_manager.run_task(run_connect, int(num_profiles), selected_link, logger, log_queue, button=connect_button)
 
     # Botão de conexão
     connect_button = tk.Button(right_frame, text="Connect", font=("Arial", 12), bg=BLUE, fg="white",
-                               command=start_connect, relief="raised", width=20)
+                               command=start_connect, relief="raised", width=20) 
     connect_button.pack(pady=10)

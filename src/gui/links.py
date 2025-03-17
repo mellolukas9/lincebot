@@ -6,7 +6,7 @@ from .colors import DARK_BLUE, BLUE
 from src.config import config
 
 # Caminho do arquivo JSON para armazenar os links
-data_path = config['data']['dir']
+data_path = config['paths']['data']
 links_file_path = os.path.join(data_path, "links.json")
 
 # Função para carregar os links salvos

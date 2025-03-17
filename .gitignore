@@ -8,3 +8,4 @@ src/config.yaml
 .pytest_cache/
 .vscode/
 temp*
+tests/test_gui.py

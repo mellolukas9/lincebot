@@ -18,14 +18,14 @@ def show_dashboard(right_frame, content_title):
 
     # Função para atualizar as estatísticas
     def refresh_stats():
-        data_dir = config['data']['dir']
+        data_path = config['paths']['data']
 
         # Ler os dados de visitas
-        visits_file_path = os.path.join(data_dir, "visited.json")
+        visits_file_path = os.path.join(data_path, "visited.json")
         visits = len(read_json_file(visits_file_path))
 
         # Ler os dados de conexões
-        connections_file_path = os.path.join(data_dir, "connected.json")
+        connections_file_path = os.path.join(data_path, "connected.json")
         connections = len(read_json_file(connections_file_path))
 
         # Criar um DataFrame com os dados

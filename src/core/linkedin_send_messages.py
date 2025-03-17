@@ -56,7 +56,7 @@ def send_messages_to_profiles(browser, profiles):
             logger.info(f"Profile {counter} visited.")
 
         # Caminho do diretório de dados (como string)
-        data_dir = config['data']['dir']
+        data_dir = config['paths']['data']
 
         # Garante que o diretório existe
         os.makedirs(data_dir, exist_ok=True)

@@ -8,8 +8,8 @@ from src.utils.library import is_name_in_json
 
 logger = setup_logger()
 
-def extract_profiles_to_visit(browser, number_profiles):
-    """Visita os perfis do LinkedIn conforme o número especificado e exibe os logs."""
+def extract_profiles_to_process(browser, number_profiles, link, file_path):
+    """Extrai os dados dos perfis do LinkedIn conforme o número especificado."""
     
     # Log do início da execução
     logger.info("Starting the LinkedIn extracted process.")
@@ -19,23 +19,12 @@ def extract_profiles_to_visit(browser, number_profiles):
         page = browser.pages[0]
         # logger.info("Successfully opened browser, accessing LinkedIn homepage.")
         
-        # page.goto('https://www.linkedin.com')
-        # page.wait_for_timeout(timeout=3000)
-        # logger.info("LinkedIn home page loaded.")
+        page.goto('https://www.linkedin.com')
+        page.wait_for_timeout(timeout=3000)
+        logger.info("LinkedIn home page loaded.")
         
         logger.info("Accessing the profile search.")
-        visit_url = config['search_links']['visit']
-        # connect_url = connect_url = config['search_links']['visit']
-        page.goto(visit_url)
-
-        # Caminho do diretório de dados (como string)
-        data_dir = config['data']['dir']
-
-        # Garante que o diretório existe
-        os.makedirs(data_dir, exist_ok=True)
-
-        # Caminho para o arquivo JSON
-        file_path = os.path.join(data_dir, "visited.json")
+        page.goto(link)
         
         raw_profiles = []
         counter = 0

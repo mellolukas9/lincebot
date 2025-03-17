@@ -22,19 +22,33 @@ def start_playwright():
     except Exception as e:
         # Em caso de erro, fecha o navegador e o Playwright antes de relançar a exceção
         if browser:
-            browser.close()
+            try:
+                browser.close()
+            except Exception as close_error:
+                print(f"Erro ao fechar o navegador: {close_error}")
         if playwright:
-            playwright.stop()
+            try:
+                playwright.stop()
+            except Exception as stop_error:
+                print(f"Erro ao parar o Playwright: {stop_error}")
         raise Exception(f"Erro ao iniciar o Playwright: {e}")
-
+    
 def close_playwright(browser, playwright):
     """
     Fecha o navegador e o Playwright de maneira controlada.
     """
     try:
         if browser:
+            print("Fechando o navegador...")
             browser.close()  # Fecha o navegador
-        if playwright:
-            playwright.stop()  # Para o Playwright
+            print("Navegador fechado com sucesso.")
     except Exception as e:
-        raise Exception(f"Erro ao fechar o Playwright: {e}")
+        print(f"Erro ao fechar o navegador: {e}")
+
+    try:
+        if playwright:
+            print("Parando o Playwright...")
+            playwright.stop()  # Para o Playwright
+            print("Playwright parado com sucesso.")
+    except Exception as e:
+        print(f"Erro ao parar o Playwright: {e}")

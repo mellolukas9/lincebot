@@ -1,17 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import logging
-import threading
-import queue
-import os
 from .colors import DARK_BLUE, BLUE
-from src.config import config
+from src.main import run_send_messages  # Importa a função run_send_messages
+from src.utils.logger_config import setup_logger
 from src.utils.library import read_json_file, remove_numbers_and_emojis
-from src.main import run_send_messages
 
-logger = logging.getLogger("LinkedInAutomation")
+logger = setup_logger()
 
-def show_messages(right_frame, content_title, window, log_text, add_thread):
+def show_messages(right_frame, content_title, task_manager):
     """Cria a interface de envio de mensagens no LinkedIn dentro do right_frame."""
 
     # Atualiza o título da aba
@@ -32,19 +28,6 @@ def show_messages(right_frame, content_title, window, log_text, add_thread):
         justify="center"
     )
     messages_description.pack(pady=10)
-
-    # Caminho para o arquivo de perfis visitados
-    data_dir = config['data']['dir']
-    visits_file_path = os.path.join(data_dir, "visited.json")
-    profiles = read_json_file(visits_file_path)
-
-    # Função para separar o nome completo em primeiro e último nome
-    def split_name(full_name):
-        parts = full_name.split()
-        first_name = parts[0]
-        last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
-        last_name = remove_numbers_and_emojis(last_name)
-        return first_name, last_name
 
     # Frame para a tabela de perfis
     table_frame = tk.Frame(right_frame, bg="white")
@@ -72,6 +55,15 @@ def show_messages(right_frame, content_title, window, log_text, add_thread):
     # Variáveis para os checkboxes
     checkbox_vars = {}
     select_all = tk.BooleanVar(value=False)  # Controle global para selecionar/deselecionar tudo
+
+    profiles = []
+
+    def split_name(full_name):
+        parts = full_name.split()
+        first_name = parts[0]
+        last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+        last_name = remove_numbers_and_emojis(last_name)
+        return first_name, last_name
 
     # Preenche a tabela com os perfis
     for profile in profiles:
@@ -111,24 +103,6 @@ def show_messages(right_frame, content_title, window, log_text, add_thread):
     # Vincula o evento de clique à função de seleção
     tree.bind("<ButtonRelease-1>", toggle_selection)
 
-    # Queue para comunicação entre threads
-    log_queue = queue.Queue()
-
-    # Função para verificar a queue e atualizar a interface
-    def check_queue():
-        try:
-            while True:
-                message = log_queue.get_nowait()
-                log_text.config(state=tk.NORMAL)
-                log_text.insert(tk.END, message + "\n")
-                log_text.config(state=tk.DISABLED)
-                log_text.yview(tk.END)
-        except queue.Empty:
-            pass
-
-        # Verifica a queue novamente após 100ms
-        window.after(100, check_queue)
-
     # Função para enviar mensagens aos perfis selecionados
     def send_message_to_selected():
         selected_profiles = []
@@ -147,31 +121,11 @@ def show_messages(right_frame, content_title, window, log_text, add_thread):
         # Desabilita o botão de envio enquanto a tarefa está em execução
         send_button.config(state=tk.DISABLED)
 
-        # Função para reabilitar o botão após a execução (sucesso ou erro)
-        def reenable_button():
-            send_button.config(state=tk.NORMAL)
+        # Obtém o logger e a fila de logs do TaskManager
+        log_queue = task_manager.log_queue
 
-        # Função para executar a tarefa em uma thread
-        def run_send_messages_task():
-            try:
-                run_send_messages(selected_profiles, logger, log_queue)
-            except Exception as e:
-                logger.error(f"Error during message sending: {e}")
-                log_queue.put(f"Error during message sending: {e}")
-            finally:
-                # Reabilita o botão após a execução (sucesso ou erro)
-                window.after(0, reenable_button)
-
-        # Cria e inicia a thread
-        thread = threading.Thread(
-            target=run_send_messages_task,
-            daemon=True
-        )
-        thread.start()
-        add_thread(thread)  # Registra a thread
-
-        # Verifica a queue periodicamente para atualizar a interface
-        check_queue()
+        # Executa a tarefa usando o TaskManager
+        task_manager.run_task(run_send_messages, selected_profiles, logger, log_queue, button=send_button)
 
     # Botão para enviar mensagens
     send_button = tk.Button(right_frame, text="Send Message to Selected", font=("Arial", 12), bg=BLUE, fg="white",

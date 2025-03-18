@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from src.utils.task_manager import TaskManager  # Importa a classe TaskManager
+from .colors import DARK_BLUE, BLUE, BACKGROUND_LOG, WHITE
 from .dashboard import show_dashboard
 from .visit import show_visit
 from .connect import show_connect
@@ -14,10 +15,10 @@ window.title("LinceBot Automation")
 window.geometry("800x600")
 
 # Área de log com scrollbar
-log_frame = tk.Frame(window, bg="white")
+log_frame = tk.Frame(window, bg=WHITE)
 log_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False, pady=10, padx=10)
 
-log_text = tk.Text(log_frame, height=15, wrap=tk.WORD, font=("Arial", 10), bg="#e0e0e0", state=tk.DISABLED)
+log_text = tk.Text(log_frame, height=15, wrap=tk.WORD, font=("Arial", 10), bg=BACKGROUND_LOG, state=tk.DISABLED)
 log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
 log_scrollbar = tk.Scrollbar(log_frame, command=log_text.yview)
@@ -34,19 +35,19 @@ task_manager = TaskManager(log_text, window)
 window.protocol("WM_DELETE_WINDOW", task_manager.on_closing)
 
 # Coluna da esquerda (menu)
-left_frame = tk.Frame(window, bg="#003366", width=200)
+left_frame = tk.Frame(window, bg=DARK_BLUE, width=200)
 left_frame.pack(side=tk.LEFT, fill=tk.Y)
 
 # Nome do usuário
-user_label = tk.Label(left_frame, text="Lucas Almeida", font=("Arial", 14), bg="#003366", fg="white")
+user_label = tk.Label(left_frame, text="Lucas Almeida", font=("Arial", 14), bg=DARK_BLUE, fg=WHITE)
 user_label.pack(pady=20)
 
 # Coluna da direita (conteúdo)
-right_frame = tk.Frame(window, bg="white")
+right_frame = tk.Frame(window, bg=WHITE)
 right_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 # Título do conteúdo
-content_title = tk.Label(right_frame, text="Dashboard", font=("Arial", 18), bg="white", fg="#003366")
+content_title = tk.Label(right_frame, text="Dashboard", font=("Arial", 18), bg=WHITE, fg=DARK_BLUE)
 content_title.pack(pady=20)
 
 # Função para limpar o conteúdo da coluna da direita
@@ -74,7 +75,7 @@ menu_items = [
 ]
 
 for item, command in menu_items:
-    button = tk.Button(left_frame, text=item, font=("Arial", 12), bg="#0066cc", fg="white", bd=0,
+    button = tk.Button(left_frame, text=item, font=("Arial", 12), bg=BLUE, fg=WHITE, bd=0,
                        command=command, width=20, anchor="w")
     button.pack(pady=5, padx=10)
 

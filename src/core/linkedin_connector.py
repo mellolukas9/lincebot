@@ -61,20 +61,24 @@ def connect_to_profiles(browser, number_profiles, link):
 
                     connect_button.click()
                     page.wait_for_timeout(timeout=2000)
-                    page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
-                    page.wait_for_timeout(timeout=2000)
+                    
+                    if not page.locator('label[for="email"]').is_visible():
+                        page.wait_for_timeout(timeout=2000)
+                        page.locator('button[aria-label="Enviar sem nota"]').click()  # Enviar sem nota
 
-                    profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
-                    profile_url = profile.locator('a').first.get_attribute("href")
-                    profile_url = profile_url.split('?mini')[0]
-                    profile_text = profile_text + '\n' + profile_url
-                    profile_text = profile_text + '\n' + get_current_time()
-                    raw_profiles.append(profile_text)
-                    name = profile_text.split('\n')[0]
+                        profile_text = profile.locator('div.pt3.pb3.t-12.t-black--light').inner_text()
+                        profile_url = profile.locator('a').first.get_attribute("href")
+                        profile_url = profile_url.split('?mini')[0]
+                        profile_text = profile_text + '\n' + profile_url
+                        profile_text = profile_text + '\n' + get_current_time()
+                        raw_profiles.append(profile_text)
+                        name = profile_text.split('\n')[0]
 
-                    # Incrementa o contador
-                    counter += 1
-                    logger.info(f"Connected profile {counter} | {name}.")
+                        # Incrementa o contador
+                        counter += 1
+                        logger.info(f"Connected profile {counter} | {name}.")
+                    else:
+                        page.keyboard.press('Escape')
 
                     if counter >= int(number_profiles):
                         logger.info(f"Connect to {counter} profiles, limit reached.")

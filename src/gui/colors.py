@@ -1,10 +1,13 @@
 # Cores principais
-BLUE = "#0e76a8"  # Azul claro
-DARK_BLUE = "#1f87b9"  # Azul escuro
+# BLUE = "#0e76a8"  # Azul claro
+BLUE = "#0066cc"
+# DARK_BLUE = "#1f87b9"  # Azul escuro
+DARK_BLUE = "#003366"
 MEDIUM_BLUE = "#3a9acf"  # Azul médio
 WHITE = "#ffffff"  # Branco
 BACKGROUND_COLOR_LIGHT = "#f0f0f0"  # Cinza claro
-BACKGROUND_LOG = "#f7f7f7"
+# BACKGROUND_LOG = "#f7f7f7"
+BACKGROUND_LOG = "#e0e0e0"
 
 # Cores principais
 # PRIMARY_COLOR = "#2c3e50"  # Azul escuro

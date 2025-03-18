@@ -51,9 +51,9 @@ def execute_playwright_task(task, *args, logger=None, event=None, log_queue=None
         result = task(browser, *args)
         
         if result:
-            logger.info(f"Task completed successfully: {result}")
+            logger.info(f"Task completed successfully.")
             if log_queue:
-                log_queue.put(f"Task completed successfully: {result}")
+                log_queue.put(f"Task completed successfully.")
         else:
             logger.error("An error occurred during the task execution.")
             if log_queue:

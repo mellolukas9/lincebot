@@ -33,7 +33,7 @@ def generate_profiles_json(data):
     * Mantenha a formatação exata das informações, incluindo a frase "e mais X conexões em comum".
     * Retorne um unico json contendo a lista de todos os objetos json criados.
 
-    Retorne a lista de objetos JSON.
+    Retorne apenas a lista de objetos JSON, sem comentáros.
     """
 
     # dados_perfis = [
@@ -45,8 +45,8 @@ def generate_profiles_json(data):
 
     # Envie o prompt para a API do Gemini e obtenha a resposta (resposta_da_api)
     # Configure a API com sua chave de API
-    gemini_api_key = os.getenv("GEMINI_API_KEY")  # Pega a variável do ambiente
-    genai.configure(api_key=gemini_api_key)
+    google_api_key = os.getenv("GOOGLE_API_KEY")  # Pega a variável do ambiente
+    genai.configure(api_key=google_api_key)
 
     # Crie uma instância do modelo Gemini
     model = genai.GenerativeModel('models/gemini-2.0-flash')
@@ -58,18 +58,5 @@ def generate_profiles_json(data):
     # print(json_string)
 
     profile_json = json.loads(json_string)
-
-    # # Obtém a data atual
-    # current_date = datetime.now()
-
-    # # Formata a data no formato 'ddmmyyyy'
-    # formatted_date = current_date.strftime("%d%m%Y")
-
-    # # Salvando novamente o JSON no arquivo
-    # with open(f'{config['data']['dir']}{action}_profiles_{formatted_date}.json', 'w') as file:
-    #     json.dump(profile_json, file, indent=4)  # Usando indent para uma formatação legível
-
-    # Agora, resposta_json contém a lista de objetos JSON
-    # print(json_response)
 
     return profile_json

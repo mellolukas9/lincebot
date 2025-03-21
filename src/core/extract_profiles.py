@@ -36,10 +36,10 @@ def extract_profiles_to_process(browser, number_profiles, link, file_path):
             profiles = page.locator('div[data-view-name="search-entity-result-universal-template"]').all()
 
             if not profiles:
-                profiles = page.locator('div[data-view-name="connections-list"] div').all()
+                profiles = page.locator('div[data-view-name="connections-list"] div div a[data-view-name="connections-profile"]').all()
 
             for profile in profiles:
-                page.wait_for_timeout(timeout=1000)
+                page.wait_for_timeout(timeout=2000)
                 profile.scroll_into_view_if_needed()
 
                 if profile.locator('div.pt3.pb3.t-12.t-black--light').is_visible():
@@ -50,8 +50,8 @@ def extract_profiles_to_process(browser, number_profiles, link, file_path):
                 name = profile_text.split('\n')[0]
 
                 if not is_name_in_json(name, file_path):
-                    waiting_time += random.randint(500, 1500)
-                    page.wait_for_timeout(timeout=waiting_time)
+                    # waiting_time += random.randint(500, 1500)
+                    # page.wait_for_timeout(timeout=waiting_time)
 
                     profile_url = profile.locator('a').first.get_attribute("href")
                     profile_url = profile_url.split('?mini')[0]

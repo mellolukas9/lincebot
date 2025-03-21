@@ -97,3 +97,11 @@ def type_slowly(element, text, delay=0.1):
     for char in text:
         element.type(char)
         time.sleep(delay)
+
+def extract_numbers(string):
+    # Encontra todas as sequências de números na string
+
+    number = ''.join(re.findall(r'\d+', string))
+    number = int(number)
+
+    return number

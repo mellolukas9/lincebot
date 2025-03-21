@@ -6,8 +6,9 @@ import os
 from .colors import DARK_BLUE, WHITE, BLUE
 from src.main import run_connect  # Importa a função run_connect
 from src.config import config
+from src.utils.logger_config import setup_logger
 
-logger = logging.getLogger("LinkedInAutomation")
+logger = setup_logger()
 
 data_path = config['paths']['data']
 links_file_path = os.path.join(data_path, "links.json")

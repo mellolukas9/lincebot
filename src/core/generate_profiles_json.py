@@ -1,6 +1,5 @@
 import os
 import json
-from datetime import datetime
 import google.generativeai as genai
 from src.config import config  # Importa as configurações
 
@@ -33,7 +32,7 @@ def generate_profiles_json(data):
     * Mantenha a formatação exata das informações, incluindo a frase "e mais X conexões em comum".
     * Retorne um unico json contendo a lista de todos os objetos json criados.
 
-    Retorne apenas a lista de objetos JSON, sem comentáros.
+    Retorne apenas a lista de objetos JSON, sem comentários.
     """
 
     # dados_perfis = [
@@ -45,17 +44,18 @@ def generate_profiles_json(data):
 
     # Envie o prompt para a API do Gemini e obtenha a resposta (resposta_da_api)
     # Configure a API com sua chave de API
-    google_api_key = os.getenv("GOOGLE_API_KEY")  # Pega a variável do ambiente
+    google_api_key = os.getenv("GEMINI_API_KEY")  # Pega a variável do ambiente
     genai.configure(api_key=google_api_key)
 
     # Crie uma instância do modelo Gemini
-    model = genai.GenerativeModel('models/gemini-2.0-flash')
+    ai_version = config['ai']['gemini']
+    model = genai.GenerativeModel(ai_version)
 
     # Gere o conteúdo
     response = model.generate_content(prompt)
     json_string = response.text
-    json_string = json_string.strip('```json\n')
-    # print(json_string)
+    # json_string = json_string.strip('```json\n')
+    json_string = json_string.replace("```json\n", "").replace("```", "").strip()
 
     profile_json = json.loads(json_string)
 

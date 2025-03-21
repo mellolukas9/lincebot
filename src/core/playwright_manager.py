@@ -1,5 +1,5 @@
 from playwright.sync_api import sync_playwright
-from src.config import config  # Importa as configurações
+from src.config import config  # Import configurations
 
 def start_playwright():
     """
@@ -10,13 +10,13 @@ def start_playwright():
     browser = None
 
     try:
-        playwright = sync_playwright().start()  # Inicia o Playwright manualmente
+        playwright = sync_playwright().start()  # Manually start Playwright
 
         # Usa as configurações do config.yaml
         browser = playwright.chromium.launch_persistent_context(
-            headless=config["settings"]["headless"],         # Modo headless
-            user_data_dir=config["paths"]["user_data_dir"],  # Diretório do perfil
-            executable_path=config["paths"]["executable_path"]  # Caminho do Chrome
+            headless=config["settings"]["headless"],         # Headless mode
+            user_data_dir=config["paths"]["user_data_dir"],  # Profile directory
+            executable_path=config["paths"]["executable_path"]  # Chrome path
         )
         return browser, playwright
     except Exception as e:
@@ -25,13 +25,13 @@ def start_playwright():
             try:
                 browser.close()
             except Exception as close_error:
-                print(f"Erro ao fechar o navegador: {close_error}")
+                print(f"Error closing the browser: {close_error}")
         if playwright:
             try:
                 playwright.stop()
             except Exception as stop_error:
-                print(f"Erro ao parar o Playwright: {stop_error}")
-        raise Exception(f"Erro ao iniciar o Playwright: {e}")
+                print(f"Error stopping Playwright: {stop_error}")
+        raise Exception(f"Error starting Playwright: {e}")
     
 def close_playwright(browser, playwright):
     """
@@ -39,16 +39,16 @@ def close_playwright(browser, playwright):
     """
     try:
         if browser:
-            print("Fechando o navegador...")
-            browser.close()  # Fecha o navegador
-            print("Navegador fechado com sucesso.")
+            print("Closing the browser...")
+            browser.close()  # Close the browser
+            print("Browser closed successfully.")
     except Exception as e:
-        print(f"Erro ao fechar o navegador: {e}")
+        print(f"Error closing the browser: {e}")
 
     try:
         if playwright:
-            print("Parando o Playwright...")
-            playwright.stop()  # Para o Playwright
-            print("Playwright parado com sucesso.")
+            print("Stopping Playwright...")
+            playwright.stop()  # Stop Playwright
+            print("Playwright stopped successfully.")
     except Exception as e:
-        print(f"Erro ao parar o Playwright: {e}")
+        print(f"Error stopping Playwright: {e}")

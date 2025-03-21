@@ -63,14 +63,14 @@ def clear_content(hide_log=False):
 # Função para carregar o Dashboard inicialmente
 def load_dashboard():
     clear_content(hide_log=True)  # Oculta o log_frame no Dashboard
-    show_dashboard(right_frame, content_title)
+    show_dashboard(right_frame, content_title, task_manager)
 
 # Menu de navegação
 menu_items = [
     ("Dashboard", lambda: load_dashboard()),
     ("Manage Links", lambda: [clear_content(hide_log=True), manage_links_ui(right_frame, content_title)]),
-    ("Visit", lambda: [clear_content(hide_log=False), show_visit(right_frame, content_title, task_manager)]),
     ("Connect", lambda: [clear_content(hide_log=False), show_connect(right_frame, content_title, task_manager)]),
+    ("Visit", lambda: [clear_content(hide_log=False), show_visit(right_frame, content_title, task_manager)]),
     ("Messages", lambda: [clear_content(hide_log=True), show_messages(right_frame, content_title, task_manager)]),
 ]
 

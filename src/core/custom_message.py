@@ -1,6 +1,4 @@
 import os
-import json
-from datetime import datetime
 import google.generativeai as genai
 from src.config import config  # Importa as configurações
 
@@ -37,11 +35,12 @@ def evaluate_profile_and_respond(name_to_profile, text):
 
     # Envie o prompt para a API do Gemini e obtenha a resposta (resposta_da_api)
     # Configure a API com sua chave de API
-    gemini_api_key = os.getenv("GEMINI_API_KEY")  # Pega a variável do ambiente
-    genai.configure(api_key=gemini_api_key)
+    google_api_key = os.getenv("GEMINI_API_KEY")  # Pega a variável do ambiente
+    genai.configure(api_key=google_api_key)
 
     # Crie uma instância do modelo Gemini
-    model = genai.GenerativeModel('models/gemini-2.0-flash')
+    ai_version = config['ai']['gemini']
+    model = genai.GenerativeModel(ai_version)
 
     # Gere o conteúdo
     response = model.generate_content(prompt)

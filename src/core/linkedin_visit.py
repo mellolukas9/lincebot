@@ -39,14 +39,14 @@ def visit_to_profiles(browser, number_profiles, link):
         waiting_time = 0
         
         for profile in profiles:
-
-            waiting_time += random.randint(1000, 3000)
-            page.wait_for_timeout(timeout=waiting_time)
-            
             name = profile['name']
             logger.info(f"Visiting {name} profiles.")
             link = profile['profile_link']
             page.goto(link)
+
+            waiting_time += random.randint(1000, 3000)
+            page.wait_for_timeout(timeout=waiting_time)
+
             profile['timestamp'] = get_current_time()
        
             # page.go_back()

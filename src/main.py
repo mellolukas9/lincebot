@@ -1,9 +1,10 @@
 import threading
 from src.utils.logger_config import setup_logger
 from src.core.playwright_manager import start_playwright, close_playwright
-from src.core.linkedin_connector import connect_to_profiles
+from src.core.linkedin_send_connection_request import connect_to_profiles
 from src.core.linkedin_visit import visit_to_profiles
 from src.core.linkedin_send_messages import send_messages_to_profiles
+from src.core.linkedin_update_connections import update_connections_on_linkedin
 
 # Configurar o logger
 logger = setup_logger()
@@ -113,6 +114,17 @@ def send_messages(profiles, logger, event, log_queue):
     """
     execute_playwright_task(send_messages_to_profiles, profiles, logger=logger, event=event, log_queue=log_queue)
 
+def update_connections(link, logger, event, log_queue):
+    """
+    Envia mensagens para uma lista de perfis no LinkedIn.
+
+    :param profiles: Lista de perfis para enviar mensagens.
+    :param logger: Logger para registro de logs.
+    :param event: Evento para sinalizar a conclusão da tarefa.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
+    """
+    execute_playwright_task(update_connections_on_linkedin, link, logger=logger, event=event, log_queue=log_queue)
+
 def run_connect(number_profiles, link, logger, log_queue):
     """
     Executa a tarefa de conexão com perfis do LinkedIn.
@@ -149,5 +161,18 @@ def run_send_messages(profiles, link, logger, log_queue):
     """
     event = threading.Event()
     thread = threading.Thread(target=send_messages, args=(profiles, link, logger, event, log_queue), daemon=True)
+    thread.start()
+    event.wait()
+
+def run_update_connections(link, logger, log_queue):
+    """
+    Executa a tarefa de envio de mensagens a perfis do LinkedIn.
+
+    :param profiles: Lista de perfis para enviar mensagens.
+    :param logger: Logger para registro de logs.
+    :param log_queue: Queue para enviar logs para a interface gráfica.
+    """
+    event = threading.Event()
+    thread = threading.Thread(target=update_connections, args=(link, logger, event, log_queue), daemon=True)
     thread.start()
     event.wait()

@@ -44,7 +44,7 @@ def generate_profiles_json(data):
 
     # Envie o prompt para a API do Gemini e obtenha a resposta (resposta_da_api)
     # Configure a API com sua chave de API
-    google_api_key = os.getenv("GEMINI_API_KEY")  # Pega a variável do ambiente
+    google_api_key = os.getenv("GOOGLE_API_KEY")  # Pega a variável do ambiente
     genai.configure(api_key=google_api_key)
 
     # Crie uma instância do modelo Gemini

@@ -1,6 +1,9 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import tkinter as tk
+from src.config import config
+import os
+from datetime import datetime
 
 def setup_logger(log_text_widget=None):
     """
@@ -25,9 +28,17 @@ def setup_logger(log_text_widget=None):
     console_handler.setLevel(logging.INFO)
     logger.addHandler(console_handler)
 
+    # Caminho do diretório de dados (como string)
+    log_path = config['paths']['log']
+
+    today = datetime.now().strftime("%Y%m%d")
+
+    # Caminho para o arquivo JSON
+    log_path = os.path.join(log_path, f"linkedin_automation_{today}.log")
+
     # Handler para arquivo (com rotação)
     file_handler = RotatingFileHandler(
-        "linkedin_automation.log",
+        filename=log_path,
         maxBytes=1048576,  # 1 MB
         backupCount=5,
         encoding="utf-8"

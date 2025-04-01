@@ -28,7 +28,7 @@ def update_connections_on_linkedin(browser, link):
         page.goto(link)
 
         # Caminho do diretório de dados (como string)
-        data_path = config['paths']['data']
+        data_path = config['paths']['log']
 
         # Garante que o diretório existe
         os.makedirs(data_path, exist_ok=True)
@@ -57,18 +57,9 @@ def update_connections_on_linkedin(browser, link):
         profiles = page.locator('div[data-view-name="connections-list"] div div a[data-view-name="connections-profile"]')
         profiles = profiles.all()
         
-        counter = 0
         raw_profiles = []
 
-        for profile in profiles: 
-            profile.scroll_into_view_if_needed()
-            page.wait_for_timeout(timeout=800)
-
-            # waiting_time += random.randint(1000, 3000)
-            # waiting_time = random.randint(1000, 2000)
-            # page.wait_for_timeout(timeout=waiting_time)
-            profile.scroll_into_view_if_needed()
-
+        for i, profile in enumerate(profiles, start=1): 
             profile_text = profile.inner_text()
             profile_url = profile.locator('a').first.get_attribute("href")
             profile_url = profile_url.split('?mini')[0]
@@ -76,23 +67,23 @@ def update_connections_on_linkedin(browser, link):
             profile_text = profile_text + '\n' + get_current_time()
             name = profile_text.split('\n')[0]
 
-            if connections_data[0]['name'] == name:
+            if connections_data[-1]['name'] == name:
                 break
 
             raw_profiles.append(profile_text)
 
-            logger.info(f"Connection {counter} | {name}.")
-            # Incrementa o contador
-            counter += 1
+            logger.info(f"Connection {i} | {name}.")
 
-        logger.info(f'{counter} new connections')
+        logger.info(f'{i - 1} new connections')
         # Lista para armazenar os lotes
         profile_json = []
         profile_temp = []
 
         logger.info('Processing new profiles...')
+
+        revesed_raw_profiles = reversed(raw_profiles)
         # Processa os registros e divide em lotes de 100
-        for i, registro in enumerate(raw_profiles, start=1):
+        for i, registro in enumerate(revesed_raw_profiles, start=1):
             profile_temp.append(registro)
             
             if i % 30 == 0:
@@ -106,10 +97,10 @@ def update_connections_on_linkedin(browser, link):
 
         # Processa os perfis encontrados
         # profile_json = generate_profiles_json(data=raw_profiles)
-        logger.info(f"Processed {counter} profiles, generating JSON.")
+        logger.info(f"Processed {i} profiles, generating JSON.")
 
         # Log de sucesso
-        logger.info(f"{counter} connections successfully extracted!")
+        logger.info(f"{i} connections successfully extracted!")
 
         # Carregar o conteúdo atual do arquivo, se ele existir
         try:
